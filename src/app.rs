@@ -3,6 +3,7 @@ use eframe::{egui, epi};
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
+#[derive(PartialEq, Debug)]
 pub struct TemplateApp {
     // Example stuff:
     label: String,
@@ -11,13 +12,33 @@ pub struct TemplateApp {
     #[cfg_attr(feature = "persistence", serde(skip))]
     value: f32,
     my_enum: Enum,
+    current_display_text: String, 
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 enum Enum {
     First,
     Second,
     Third,
+    Fourth,
+    Fifth,
+    Sixth,
+}
+
+impl Enum {
+    fn to_string(&self) -> String {
+        println!("{:?}", self);
+         let x = match self {
+            Enum::First => "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
+            Enum::Second => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
+            Enum::Third => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
+            Enum::Fourth => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
+            Enum::Fifth => " o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
+            Enum::Sixth => "None selected".to_string(),
+        };
+        println!("x is {:?}", x);
+        x
+    }
 }
 
 impl Default for TemplateApp {
@@ -26,7 +47,8 @@ impl Default for TemplateApp {
             // Example stuff:
             label: "Hello World!".to_owned(),
             value: 2.7,
-            my_enum: Enum::First,
+            my_enum: Enum::Sixth,
+            current_display_text: "".to_string(),
         }
     }
 }
@@ -65,6 +87,7 @@ impl epi::App for TemplateApp {
             label,
             value,
             my_enum,
+            current_display_text
         } = self;
 
         // Examples of how to create different panels and windows.
@@ -85,9 +108,11 @@ impl epi::App for TemplateApp {
 
         egui::SidePanel::left("side_panel").min_width(500.0).show(ctx, |ui| {
 
-
-            ui.radio_value(&mut self.my_enum, Enum::First, "First");
-            ui.radio_value(&mut self.my_enum, Enum::Second, "Second");
+            ui.radio_value(my_enum, Enum::First, "rl o < {} S2,Sigma > => < S2,Sigma > .");
+            ui.radio_value(my_enum, Enum::Second, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
+            ui.radio_value(my_enum, Enum::Third, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
+            ui.radio_value(my_enum, Enum::Fourth, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
+            ui.radio_value(my_enum, Enum::Fifth, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             // ui.heading("Side Panel");
 
@@ -96,7 +121,7 @@ impl epi::App for TemplateApp {
             //     ui.text_edit_singleline(label);
             // });
 
-            // ui.add(egui::Slider::new(value, 0.0..=10.0).text("value"));
+            ui.add(egui::Slider::new(value, 0.0..=10.0).text("value"));
             // if ui.button("Increment").clicked() {
             //     *value += 1.0;
             // }
@@ -111,49 +136,56 @@ impl epi::App for TemplateApp {
             //     });
             // });
             //
-            ui.label("crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
-            ui.label("crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            ui.label("crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            ui.label("rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .");
-            ui.label("crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            ui.label("crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            ui.label("crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .");
-            ui.label("crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            ui.label("crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            ui.label("rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
-            ui.label("crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
-            ui.label("rl o < ! true,Sigma > => < false,Sigma > .");
-            ui.label("rl o < ! false,Sigma > => < true,Sigma > .");
-            ui.label("crl o < B1 && B2,Sigma > => < B1' && B2,Sigma > if o < B1,Sigma > => < B1',Sigma > .");
-            ui.label("rl o < false && B2,Sigma > => < false,Sigma > .");
-            ui.label("rl o < true && B2,Sigma > => < B2,Sigma > .");
-            ui.label("rl o < {S},Sigma > => < S,Sigma > .");
-            ui.label("crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
-            ui.label("crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
-            ui.label("crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
-            ui.label("rl o < {} S2,Sigma > => < S2,Sigma > .");
-            ui.label("crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
-            ui.label("rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
-            ui.label("rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
-            ui.label("rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
-            ui.label("rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
+            // ui.label("crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
+            // ui.label("crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+            // ui.label("crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+            // ui.label("rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .");
+            // ui.label("crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+            // ui.label("crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+            // ui.label("crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .");
+            // ui.label("crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+            // ui.label("crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+            // ui.label("rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
+            // ui.label("crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
+            // ui.label("rl o < ! true,Sigma > => < false,Sigma > .");
+            // ui.label("rl o < ! false,Sigma > => < true,Sigma > .");
+            // ui.label("crl o < B1 && B2,Sigma > => < B1' && B2,Sigma > if o < B1,Sigma > => < B1',Sigma > .");
+            // ui.label("rl o < false && B2,Sigma > => < false,Sigma > .");
+            // ui.label("rl o < true && B2,Sigma > => < B2,Sigma > .");
+            // ui.label("rl o < {S},Sigma > => < S,Sigma > .");
+            // ui.label("crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
+            // ui.label("rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
+            // ui.label("rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
+            // ui.label("rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
+
+            // ui.label("rl o < {} S2,Sigma > => < S2,Sigma > .");
+            // ui.label("crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
+            // ui.label("crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
+            // ui.label("crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
+            // ui.label("rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
 
-            // if ui.button("Increment").clicked() {
-            //     *value += 1.0;
-            // }
+            if ui.button("Apply").clicked() {
+                println!("Apply: {:?}", my_enum);
+                *current_display_text = my_enum.to_string();
+                println!("Apply: {:?}", current_display_text);
+            }
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
 
-            ui.heading("eframe template");
-            ui.hyperlink("https://github.com/emilk/eframe_template");
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/master/",
-                "Source code."
-            ));
-            egui::warn_if_debug_build(ui);
+            // ui.heading("eframe template");
+            // ui.hyperlink("https://github.com/emilk/eframe_template");
+            // ui.add(egui::github_link_file!(
+            //     "https://github.com/emilk/eframe_template/blob/master/",
+            //     "Source code."
+            // ));
+            // egui::warn_if_debug_build(ui);
+
+
+            //println!("{:?}", current_display_text);
+            ui.label(current_display_text);
         });
     }
 }
