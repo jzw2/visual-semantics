@@ -1,9 +1,12 @@
+
+use crate::ast::Rule;
+use crate::ast::Stack;
 use eframe::{egui, epi};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 pub struct TemplateApp {
     // Example stuff:
     label: String,
@@ -11,30 +14,23 @@ pub struct TemplateApp {
     // this how you opt-out of serialization of a member
     #[cfg_attr(feature = "persistence", serde(skip))]
     value: f32,
-    my_enum: Enum,
+    my_enum: Rule,
     current_display_text: String, 
+    stack: Stack, 
 }
 
-#[derive(PartialEq, Debug)]
-enum Enum {
-    First,
-    Second,
-    Third,
-    Fourth,
-    Fifth,
-    Sixth,
-}
 
-impl Enum {
+impl Rule {
     fn to_string(&self) -> String {
         println!("{:?}", self);
          let x = match self {
-            Enum::First => "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
-            Enum::Second => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
-            Enum::Third => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
-            Enum::Fourth => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
-            Enum::Fifth => " o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
-            Enum::Sixth => "None selected".to_string(),
+            Rule::RewriteEmptyBlock=> "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
+            Rule::RewriteSequence => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
+            Rule::RewriteAssignmentArith => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
+            Rule::RewriteAssigmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
+            Rule::RewriteTop => " o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
+            Rule::NoOp => "None selected".to_string(),
+            _ => "".to_string(),
         };
         println!("x is {:?}", x);
         x
@@ -47,8 +43,9 @@ impl Default for TemplateApp {
             // Example stuff:
             label: "Hello World!".to_owned(),
             value: 2.7,
-            my_enum: Enum::Sixth,
+            my_enum: Rule::NoOp,
             current_display_text: "".to_string(),
+            stack: Stack::new(),
         }
     }
 }
@@ -87,7 +84,8 @@ impl epi::App for TemplateApp {
             label,
             value,
             my_enum,
-            current_display_text
+            current_display_text,
+            stack, 
         } = self;
 
         // Examples of how to create different panels and windows.
@@ -108,11 +106,11 @@ impl epi::App for TemplateApp {
 
         egui::SidePanel::left("side_panel").min_width(500.0).show(ctx, |ui| {
 
-            ui.radio_value(my_enum, Enum::First, "rl o < {} S2,Sigma > => < S2,Sigma > .");
-            ui.radio_value(my_enum, Enum::Second, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
-            ui.radio_value(my_enum, Enum::Third, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
-            ui.radio_value(my_enum, Enum::Fourth, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
-            ui.radio_value(my_enum, Enum::Fifth, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
+            ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
+            ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
+            ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
+            ui.radio_value(my_enum, Rule::RewriteAssigmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
+            ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             // ui.heading("Side Panel");
 
@@ -166,9 +164,8 @@ impl epi::App for TemplateApp {
 
 
             if ui.button("Apply").clicked() {
-                println!("Apply: {:?}", my_enum);
-                *current_display_text = my_enum.to_string();
-                println!("Apply: {:?}", current_display_text);
+                
+                stack.applyRule(my_enum.clone());
             }
         });
 
@@ -185,7 +182,7 @@ impl epi::App for TemplateApp {
 
 
             //println!("{:?}", current_display_text);
-            ui.label(current_display_text);
+            ui.label(format!("{:?}", stack));
         });
     }
 }

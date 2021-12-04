@@ -1,5 +1,5 @@
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct State(Vec<(String, u32)>);
 
 impl State {
@@ -19,12 +19,12 @@ impl State {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Pgm {
     Program(Vec<String>, Stmt),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Configuration {
     AExpConf(Box<AExp>, State),
     BExpConf(Box<BExp>, State),
@@ -33,7 +33,7 @@ enum Configuration {
     Dummy,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum AExp {
     Plus(Box<AExp>, Box<AExp>),
     Divide(Box<AExp>, Box<AExp>),
@@ -41,7 +41,7 @@ enum AExp {
     Int(u32),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum BExp {
     LessThanEq(Box<AExp>, Box<AExp>),
     Negation(Box<BExp>),
@@ -49,7 +49,7 @@ enum BExp {
     Bool(bool),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Stmt {
     StmtBlock(Box<Block>),
     Assign(String, Box<AExp>),
@@ -58,24 +58,32 @@ enum Stmt {
     While(BExp, Block),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Block {
     EmptyBlock,
     BlockStmt(Box<Stmt>),
 }
 
 
-#[derive(Clone)]
-struct Stack {
+#[derive(Clone, Debug)]
+pub struct Stack {
     stack: Vec<Configuration>,
     rules: Vec<Rule>,
 }
 
 impl Stack {
-    fn applyRule(&mut self, rule: Rule) {
+    pub fn new() -> Stack {
+    Stack { stack: vec![Configuration::PgmConf(
+        Box::new(Pgm::Program(vec!["x".to_string()], Stmt::Assign("x".to_string(), Box::new(AExp::Int(5)))))
+        )], rules: vec![] }
+    }
+    pub fn applyRule(&mut self, rule: Rule) {
+        println!("{:?}", self);
         self.rules.push(rule.clone());
+        println!("{:?}", self);
         let last = self.stack.last().expect("oops");
         let next_configuration = rule.getNextConfiguartion(last.clone());
+        println!("{:?}", next_configuration);
         match next_configuration {
             Some(conf) => {
 
@@ -86,16 +94,19 @@ impl Stack {
                 while !self.rules.is_empty() {
                     let rule = self.rules.pop().expect("failed to pop rule stack");
                     let bottom_conf = self.stack.pop().expect("failed to pop stack");
-                    rule.reduce_down(bottom_conf.clone(), top_conf);
-                    top_conf = bottom_conf;
+                    println!("{:?}", self);
+                    top_conf = rule.reduce_down(bottom_conf.clone(), top_conf);
+                    println!("{:?}", self);
                 }
+                self.stack.push(top_conf);
+                println!("{:?}", self);
             }
         }
     }
 }
 
-#[derive(Clone)]
-enum Rule {
+#[derive(Clone, PartialEq, Debug)]
+pub enum Rule {
     RewritePlusLeft,
     RewritePlusRight,
     RewritePlus, 
@@ -105,7 +116,7 @@ enum Rule {
 
 
     // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
-    RerwiteSequence,
+    RewriteSequence,
     // "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > ."
     RewriteAssignmentArith,
     // Enum::Fourth => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
@@ -147,7 +158,7 @@ impl Rule {
 
 
             }
-            Rule::RerwiteSequence => {
+            Rule::RewriteSequence => {
                 // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
                  match conf {
                     Configuration::StmtConf(x, sigma) => 
@@ -189,7 +200,7 @@ impl Rule {
 
     fn reduce_down(&self, bottom: Configuration, top: Configuration) -> Configuration {
         let x = match self {
-            Rule::RerwiteSequence => {
+            Rule::RewriteSequence => {
                 // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
                  match bottom {
                     Configuration::StmtConf(x, sigma) => 
@@ -281,7 +292,7 @@ impl Rule {
             }
             _ => todo!()
         };
-        todo!()
+        x
     }
 }
 
