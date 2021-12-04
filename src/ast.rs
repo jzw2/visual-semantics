@@ -189,11 +189,8 @@ pub enum Rule {
     // Enum::Fifth => " o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
     RewriteTop,
     // Enum::Sixth => "None selected".to_string(),
-    
     NoOp,
-
 }
-
 
 impl Rule {
     fn get_next_configuration(&self, conf: Configuration) -> Option<Configuration> {
@@ -212,7 +209,6 @@ impl Rule {
                     }
                     _ => return None
                  }
-
             }
             Rule::RewriteVariableLookup => {
                 // o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .
@@ -379,7 +375,7 @@ impl Rule {
             Rule::RewriteConditonalFalse => Configuration::Dummy,
             // rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .
             Rule::RewriteLoop => Configuration::Dummy,
-            _ => return None,
+            Rule::NoOp => return None,
         };
         Some(ret)
     }
@@ -388,6 +384,52 @@ impl Rule {
         
         let x = match self {
 
+            Rule::RewriteVariableLookup => {
+                // o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .
+                
+                match bottom {
+                    Configuration::AExpConf(x, sigma) => 
+                      match *x {
+                        AExp::Id(x) => {
+                            let State(v) = sigma.clone();
+                            match v.iter().find(|(k, v)| k == &x) {
+                                Some((k, v)) => Configuration::AExpConf(Box::new(AExp::Int(*v)), sigma),
+                                _ => return None,
+                            }
+                        }
+                        _ => return None
+                      },
+                    _ => return None
+                }
+            }
+
+            Rule::RewritePlusLeft => {
+todo!()
+            }
+            Rule::RewritePlusRight => {
+                todo!()
+            }
+
+            Rule::RewritePlus => {
+                match bottom {
+                    Configuration::AExpConf(x, sigma) =>
+                      match *x {
+                        AExp::Plus(box1, box2) => {
+                            match *box1 {
+                                AExp::Int(n1) => {
+                                    match *box2 {
+                                    AExp::Int(n2) => Configuration::AExpConf(Box::new(AExp::Int(n1 + n2)), sigma),
+                                    _ => return None
+                                    }
+                                }
+                                _ => return None
+                            }
+                        }
+                        _ => return None
+                    }
+                    _ => return None
+                }
+            }
             //  crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .
             Rule::RewriteDivideLeft => {
                 todo!()
@@ -419,25 +461,12 @@ impl Rule {
                 } 
             }
 
-            Rule::RewritePlus => {
-                match bottom {
-                    Configuration::AExpConf(x, sigma) =>
-                      match *x {
-                        AExp::Plus(box1, box2) => {
-                            match *box1 {
-                                AExp::Int(n1) => {
-                                    match *box2 {
-                                    AExp::Int(n2) => Configuration::AExpConf(Box::new(AExp::Int(n1 + n2)), sigma),
-                                    _ => return None
-                                    }
-                                }
-                                _ => return None
-                            }
-                        }
-                        _ => return None
-                    }
-                    _ => return None
-                }
+            Rule::RewriteLessThanLeft => {
+                todo!()
+            }
+
+            Rule::RewriteLessThanRight => {
+                todo!()
             }
 
             Rule::RewriteLessThan => {
@@ -447,28 +476,11 @@ impl Rule {
                 }
             }
 
-            Rule::RewriteVariableLookup => {
-                // o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .
-                
-                match bottom {
-                    Configuration::AExpConf(x, sigma) => 
-                      match *x {
-                        AExp::Id(x) => {
-                            let State(v) = sigma.clone();
-                            match v.iter().find(|(k, v)| k == &x) {
-                                Some((k, v)) => Configuration::AExpConf(Box::new(AExp::Int(*v)), sigma),
-                                _ => return None,
-                            }
-                        }
-                        _ => return None
-                      },
-                    _ => return None
-                }
-            }
             // crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .
             Rule::RewriteNegate => {
                 todo!()
             }
+
             // rl o < ! true,Sigma > => < false,Sigma > .
             Rule::RewriteNegateTrue => {
                 todo!()
@@ -478,21 +490,11 @@ impl Rule {
             Rule::RewriteNegateFalse => {
                 todo!()
             }
-            Rule::RewriteSequence => {
-                // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
-                 match bottom {
-                    Configuration::StmtConf(x, _sigma) => 
-                    match *x {
-                       Stmt::Sequence(_s1, s2) => 
-                       match top {
-                        Configuration::StmtConf(s1_prime, sigma_prime) => Configuration::StmtConf(Box::new(Stmt::Sequence(s1_prime, s2)), sigma_prime),
-                        _ => return None,
-                       }
-                       _ => return None,
-                    }
-                    _ => return None,
-                 }
+
+            Rule::RewriteBlockStatement => {
+                todo!()
             }
+
 
             Rule::RewriteAssignmentArith => {
                 // Configuration::
@@ -512,6 +514,8 @@ impl Rule {
                     _ => return None,
                  }
             }
+
+
             Rule::RewriteAssignmentInt => {
                 // Configuration::
                 // "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined ."
@@ -530,6 +534,25 @@ impl Rule {
                  }
 
             }
+            Rule::RewriteSequence => {
+                // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
+                 match bottom {
+                    Configuration::StmtConf(x, _sigma) => 
+                    match *x {
+                       Stmt::Sequence(_s1, s2) => 
+                       match top {
+                        Configuration::StmtConf(s1_prime, sigma_prime) => Configuration::StmtConf(Box::new(Stmt::Sequence(s1_prime, s2)), sigma_prime),
+                        _ => return None,
+                       }
+                       _ => return None,
+                    }
+                    _ => return None,
+                 }
+            }
+            Rule::RewriteEmptyBlock => {
+                todo!()
+            }
+
             Rule::RewriteTop => {
                 // Configuration::
                 //rl o < int Xl ; S > => < S,(Xl |-> 0) > .
@@ -650,7 +673,7 @@ impl Rule {
                     _ => return None, 
                 }
             }
-            _ => return None,
+            NoOp => return None,
         };
         Some(x)
     }
