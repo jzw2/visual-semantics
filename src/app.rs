@@ -27,7 +27,7 @@ impl Rule {
             Rule::RewriteEmptyBlock=> "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
             Rule::RewriteSequence => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
             Rule::RewriteAssignmentArith => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
-            Rule::RewriteAssigmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
+            Rule::RewriteAssignmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
             Rule::RewriteTop => " o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
             Rule::NoOp => "None selected".to_string(),
             _ => "".to_string(),
@@ -81,10 +81,10 @@ impl epi::App for TemplateApp {
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
         let Self {
-            label,
+            label: _,
             value,
             my_enum,
-            current_display_text,
+            current_display_text: _,
             stack, 
         } = self;
 
@@ -109,7 +109,7 @@ impl epi::App for TemplateApp {
             ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
             ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
             ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteAssigmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
+            ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
             ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             // ui.heading("Side Panel");
@@ -164,7 +164,6 @@ impl epi::App for TemplateApp {
 
 
             if ui.button("Apply").clicked() {
-                
                 stack.applyRule(my_enum.clone());
             }
         });
