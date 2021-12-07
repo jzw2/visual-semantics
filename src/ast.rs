@@ -1,12 +1,23 @@
+use std::fmt;
 
 #[derive(Clone, Debug)]
 struct State(Vec<(String, u32)>);
 
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            State(v) => {
+                write!(f, "[{}]", v.iter().map(|(k, v)| format!("{} |-> {}", k, v)).collect::<Vec<String>>().join(", "))
+            }
+        }
+    }
+}
+
 impl State {
     fn substitute(&self, s:String , i: u32) -> State {
         let State(v) = self;
-        let new_vec = v.iter().map(|(k, v)| {
-            if k == &s {
+       let new_vec = v.iter().map(|(k, v)| {
+           if k == &s {
                 (k.clone(), i)
             } else {
                 (k.clone(), *v)
@@ -18,12 +29,20 @@ impl State {
         State(v.into_iter().map(|x| (x, 0)).collect())
     }
 }
-
 #[derive(Clone, Debug)]
 enum Pgm {
     Program(Vec<String>, Stmt),
 }
 
+impl fmt::Display for Pgm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Pgm::Program(vars, s) => {
+                write!(f, "int {} ; \n{}", vars.join(", "), s.to_string())
+            }
+        }
+    }
+}
 #[derive(Clone, Debug)]
 enum Configuration {
     AExpConf(Box<AExp>, State),
@@ -31,6 +50,29 @@ enum Configuration {
     StmtConf(Box<Stmt>, State),
     PgmConf(Box<Pgm>),
     Dummy, //top level, meaning that it is an unconditional rewrite
+}
+
+impl fmt::Display for Configuration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Configuration::AExpConf(a, s) => {
+                write!(f, "< {}, {} >", a.to_string(), s.to_string())
+            }
+            Configuration::BExpConf(a, s) => {
+                write!(f, "< {}, {} >", a.to_string(), s.to_string())
+            }
+            Configuration::StmtConf(a, s) => {
+                write!(f, "< {}, {} >", a.to_string(), s.to_string())
+            }
+            Configuration::PgmConf(a) => {
+                write!(f, "< {} >", a.to_string())
+            }
+            Configuration::Dummy => {
+                write!(f, "Error this shouldn't be here")
+            }
+
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -41,12 +83,36 @@ enum AExp {
     Int(u32),
 }
 
+impl fmt::Display for AExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AExp::Plus(a1, a2) => {
+                write!(f, "{} + {}", a1.to_string(), a2.to_string())
+            }
+            AExp::Divide(a1, a2) => {
+                write!(f, "{} + {}", a1.to_string(), a2.to_string())
+            }
+            AExp::Id(s) => {
+                write!(f, "{}", s.to_string())
+            }
+            AExp::Int(s) => {
+                write!(f, "{}", s.to_string())
+            }
+        }
+    }
+}
 #[derive(Clone, Debug)]
 enum BExp {
     LessThanEq(Box<AExp>, Box<AExp>),
     Negation(Box<BExp>),
     And(Box<BExp>, Box<BExp>),
     Bool(bool),
+}
+
+impl fmt::Display for BExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -64,6 +130,40 @@ enum Block {
     BlockStmt(Box<Stmt>),
 }
 
+impl fmt::Display for Stmt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Stmt::StmtBlock(x) => {
+                write!(f, "{}", x.to_string())
+            }
+            Stmt::Assign(s, a) => {
+                write!(f, "{} = {} ; ", s.to_string(), a.to_string())
+            }
+            Stmt::Sequence(s1, s2) => {
+                write!(f, "{}\n{}", s1.to_string(), s2.to_string())
+            }
+            Stmt::IfThenElse(b, b1, b2) => {
+                write!(f, "if {} then\n {} \n else {} \n end", b.to_string(), b1.to_string(), b2.to_string())
+            }
+            Stmt::While(b, block) => {
+                write!(f, "while {} do \n {} \n end", b.to_string(), block.to_string())
+            }
+        }
+    }
+}
+impl fmt::Display for Block {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Block::EmptyBlock => {
+                write!(f, "{{}}")
+            }
+            Block::BlockStmt(x) => {
+                write!(f, "{}", x.to_string())
+            }
+        }
+    }
+}
+
 
 #[derive(Clone, Debug)]
 pub struct Stack {
@@ -71,6 +171,11 @@ pub struct Stack {
     rules: Vec<Rule>,
 }
 
+impl fmt::Display for Stack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.stack.iter().rev().map(|x| x.to_string()).collect::<Vec<String>>().join("---"))
+    }
+}
 impl Stack {
     pub fn new() -> Stack {
         let variables = vec!["x".to_string(), "y".to_string()];
@@ -182,7 +287,7 @@ pub enum Rule {
     // rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .
     RewriteConditionalTrue,
     // rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .
-    RewriteConditonalFalse,
+    RewriteConditionalFalse,
     // rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .
     RewriteLoop, 
 
@@ -372,7 +477,7 @@ impl Rule {
     // rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .
             Rule::RewriteConditionalTrue => Configuration::Dummy,
             // rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .
-            Rule::RewriteConditonalFalse => Configuration::Dummy,
+            Rule::RewriteConditionalFalse => Configuration::Dummy,
             // rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .
             Rule::RewriteLoop => Configuration::Dummy,
             Rule::NoOp => return None,
@@ -615,7 +720,7 @@ todo!()
                     _ => return None, 
                 }
             }
-            Rule::RewriteConditonalFalse => {
+            Rule::RewriteConditionalTrue => {
             // rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .
                 match bottom {
                     Configuration::StmtConf(s, sigm) => {
@@ -635,7 +740,7 @@ todo!()
                 }
             }
             // rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .
-            Rule::RewriteConditonalFalse => {
+            Rule::RewriteConditionalFalse => {
                 match bottom {
                     Configuration::StmtConf(s, sigm) => {
                         match *s {
@@ -673,7 +778,7 @@ todo!()
                     _ => return None, 
                 }
             }
-            NoOp => return None,
+            Rule::NoOp => return None,
         };
         Some(x)
     }

@@ -10,7 +10,6 @@ use eframe::{egui, epi};
 pub struct TemplateApp {
     // Example stuff:
     label: String,
-
     // this how you opt-out of serialization of a member
     #[cfg_attr(feature = "persistence", serde(skip))]
     value: f32,
@@ -23,11 +22,6 @@ impl Rule {
     fn to_string(&self) -> String {
         println!("{:?}", self);
          let x = match self {
-            Rule::RewriteEmptyBlock=> "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
-            Rule::RewriteSequence => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
-            Rule::RewriteAssignmentArith => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
-            Rule::RewriteAssignmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
-            Rule::RewriteTop => " o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
 
             Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
             Rule::RewritePlusLeft => "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
@@ -54,14 +48,9 @@ impl Rule {
             
             Rule::RewriteConditional => "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .".to_string(),
             Rule::RewriteConditionalTrue => "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .".to_string(),
-            Rule::RewriteConditonalFalse => "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .".to_string(),
+            Rule::RewriteConditionalFalse => "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .".to_string(),
 
             Rule::RewriteLoop => "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .".to_string(),
-            Rule::RewriteEmptyBlock => "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
-            
-            Rule::RewriteConditional => "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .".to_string(),
-            Rule::RewriteConditionalTrue => "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .".to_string(),
-            Rule::RewriteConditonalFalse => "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .".to_string(),
             Rule::NoOp => "None selected".to_string(),
             _ => "".to_string(),
         };
@@ -171,15 +160,12 @@ impl epi::App for TemplateApp {
             
             ui.radio_value(my_enum, Rule::RewriteConditional, "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
             ui.radio_value(my_enum, Rule::RewriteConditionalTrue, "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteConditonalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
+            ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
 
             ui.radio_value(my_enum, Rule::RewriteLoop, "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
             ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
             
-            ui.radio_value(my_enum, Rule::RewriteConditional, "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
-            ui.radio_value(my_enum, Rule::RewriteConditionalTrue, "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteConditonalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
-            
+
 
             // ui.heading("Side Panel");
 
@@ -250,7 +236,7 @@ impl epi::App for TemplateApp {
 
 
             //println!("{:?}", current_display_text);
-            ui.label(format!("{:?}", stack));
+            ui.label(format!("{}", stack));
         });
     }
 }
