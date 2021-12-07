@@ -487,6 +487,8 @@ impl Rule {
         Some(ret)
     }
 
+    // bottom is the configuration below the line, 
+    // top is the configuration above the line, and we want to return the new top
     fn reduce_down(&self, bottom: Configuration, top: Configuration) -> Option<Configuration> {
         let x = match self {
             Rule::RewriteVariableLookup => {
@@ -510,10 +512,40 @@ impl Rule {
             }
 
             Rule::RewritePlusLeft => {
-                todo!()
-            }
+
+                let new_arith = match top {
+                    Configuration::AExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::AExpConf(x, sigma) => match *x {
+                        AExp::Plus(box1, box2) => {
+                            Configuration::AExpConf(Box::new(AExp::Plus(box1, new_arith)), sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
+
+             }                   
             Rule::RewritePlusRight => {
-                todo!()
+// crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
+
+
+                let new_arith = match top {
+                    Configuration::AExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::AExpConf(x, sigma) => match *x {
+                        AExp::Plus(box1, box2) => {
+                            Configuration::AExpConf(Box::new(AExp::Plus(box2, new_arith)), sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
+
             }
 
             Rule::RewritePlus => match bottom {
@@ -533,11 +565,35 @@ impl Rule {
             },
             //  crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .
             Rule::RewriteDivideLeft => {
-                todo!()
+                let new_arith = match top {
+                    Configuration::AExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::AExpConf(x, sigma) => match *x {
+                        AExp::Divide(box1, box2) => {
+                            Configuration::AExpConf(Box::new(AExp::Divide(box1, new_arith)), sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
             //  crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
             Rule::RewriteDivideRight => {
-                todo!()
+                let new_arith = match top {
+                    Configuration::AExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::AExpConf(x, sigma) => match *x {
+                        AExp::Divide(box1, box2) => {
+                            Configuration::AExpConf(Box::new(AExp::Divide(box2, new_arith)), sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
             Rule::RewriteDivide => match bottom {
                 Configuration::AExpConf(x, sigma) => match *x.clone() {
@@ -551,41 +607,131 @@ impl Rule {
                         },
                         _ => return None,
                     },
-                    _ => return None,
-                },
                 _ => return None,
-            },
+                }
+                _ => return None,
+            }
 
             Rule::RewriteLessThanLeft => {
-                todo!()
+            // crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .
+                let new_arith = match top {
+                    Configuration::AExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::BExpConf(x, sigma) => match *x {
+                        BExp::LessThanEq(box1, box2) => {
+                            Configuration::BExpConf(Box::new(BExp::LessThanEq(box1, new_arith)), sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
 
             Rule::RewriteLessThanRight => {
-                todo!()
+
+                let new_arith = match top {
+                    Configuration::AExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::BExpConf(x, sigma) => match *x {
+                        BExp::LessThanEq(box1, box2) => {
+                            Configuration::BExpConf(Box::new(BExp::LessThanEq(box2, new_arith)), sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
 
             Rule::RewriteLessThan => match bottom {
-                Configuration::AExpConf(_x, _sigma) => return None,
+                Configuration::BExpConf(_x, _sigma) => match *_x {
+                    BExp::LessThanEq(box1, box2) => {
+                      match *box1 {
+                          AExp::Int(i1) => match *box2 {
+                              AExp::Int(i2) => if i2 > i1 {Configuration::BExpConf(Box::new(BExp::Bool(true)), _sigma)} 
+                              else {Configuration::BExpConf(Box::new(BExp::Bool(false)), _sigma) }
+                              _ => return None 
+                            }
+                          _ => return None
+                      }  
+                    },
+                    _ => return None
+                }
                 _ => return None,
             },
 
             // crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .
             Rule::RewriteNegate => {
-                todo!()
+
+                let new_bool = match top {
+                    Configuration::BExpConf(b, _sigma) => b,
+                    _ => return None,
+                };
+                match bottom {
+                    Configuration::BExpConf(x, sigma) => match *x {
+                        BExp::Negation(box1) => {
+                            Configuration::BExpConf(new_bool, sigma)
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
 
             // rl o < ! true,Sigma > => < false,Sigma > .
             Rule::RewriteNegateTrue => {
-                todo!()
+
+                match bottom {
+                    Configuration::BExpConf(x, sigma) => match *x {
+                        BExp::Negation(box1) => match *box1 {
+                            BExp::Bool(true) => {
+
+                                Configuration::BExpConf(Box::new(BExp::Bool(false)), sigma)
+                            }
+                            _ => return None,
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
 
             // rl o < ! false,Sigma > => < true,Sigma > .
             Rule::RewriteNegateFalse => {
-                todo!()
+
+                match bottom {
+                    Configuration::BExpConf(x, sigma) => match *x {
+                        BExp::Negation(box1) => match *box1 {
+                            BExp::Bool(false) => {
+
+                                Configuration::BExpConf(Box::new(BExp::Bool(true)), sigma)
+                            }
+                            _ => return None,
+                        }
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
 
             Rule::RewriteBlockStatement => {
-                todo!()
+                // rl o < {S},Sigma > => < S,Sigma > .
+                match bottom {
+                    Configuration::StmtConf(x, sigma) => match *x {
+                        Stmt::StmtBlock(s) => match *s {
+                            Block::BlockStmt(s) => {
+                                Configuration::StmtConf(s, sigma)
+                            }
+                            _ => return None,
+                        },
+
+                        _ => return None,
+                    },
+                    _ => return None,
+                }
             }
 
             Rule::RewriteAssignmentArith => {
