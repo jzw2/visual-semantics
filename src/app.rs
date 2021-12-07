@@ -128,11 +128,6 @@ impl epi::App for TemplateApp {
 
         egui::SidePanel::left("side_panel").min_width(500.0).show(ctx, |ui| {
 
-            ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
-            ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
-            ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             ui.radio_value(my_enum, Rule::RewriteVariableLookup, "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
             ui.radio_value(my_enum, Rule::RewritePlusLeft, "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
@@ -163,9 +158,9 @@ impl epi::App for TemplateApp {
             ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
 
             ui.radio_value(my_enum, Rule::RewriteLoop, "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
-            
 
+
+            ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             // ui.heading("Side Panel");
 
@@ -174,7 +169,6 @@ impl epi::App for TemplateApp {
             //     ui.text_edit_singleline(label);
             // });
 
-            ui.add(egui::Slider::new(value, 0.0..=10.0).text("value"));
             // if ui.button("Increment").clicked() {
             //     *value += 1.0;
             // }

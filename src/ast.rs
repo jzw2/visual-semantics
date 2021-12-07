@@ -173,7 +173,7 @@ pub struct Stack {
 
 impl fmt::Display for Stack {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.stack.iter().rev().map(|x| x.to_string()).collect::<Vec<String>>().join("---"))
+        write!(f, "{}", self.stack.iter().rev().map(|x| x.to_string()).collect::<Vec<String>>().join("\n---\n"))
     }
 }
 impl Stack {
@@ -425,7 +425,7 @@ impl Rule {
             }
             Rule::RewriteEmptyBlock => {
                 // 
-                return None;
+                Configuration::Dummy
             }
             Rule::RewriteSequence => {
                 // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
@@ -653,9 +653,6 @@ todo!()
                     }
                     _ => return None,
                  }
-            }
-            Rule::RewriteEmptyBlock => {
-                todo!()
             }
 
             Rule::RewriteTop => {
