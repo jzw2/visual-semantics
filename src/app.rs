@@ -1,4 +1,3 @@
-
 use crate::ast::Rule;
 use crate::ast::Stack;
 use eframe::{egui, epi};
@@ -14,14 +13,14 @@ pub struct TemplateApp {
     #[cfg_attr(feature = "persistence", serde(skip))]
     value: f32,
     my_enum: Rule,
-    current_display_text: String, 
-    stack: Stack, 
+    current_display_text: String,
+    stack: Stack,
 }
 
 impl Rule {
     fn to_string(&self) -> String {
         println!("{:?}", self);
-         let x = match self {
+        let x = match self {
 
             Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
             Rule::RewritePlusLeft => "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
@@ -107,7 +106,7 @@ impl epi::App for TemplateApp {
             value,
             my_enum,
             current_display_text: _,
-            stack, 
+            stack,
         } = self;
 
         // Examples of how to create different panels and windows.
@@ -227,7 +226,6 @@ impl epi::App for TemplateApp {
             //     "Source code."
             // ));
             // egui::warn_if_debug_build(ui);
-
 
             //println!("{:?}", current_display_text);
             ui.label(format!("{}", stack));
