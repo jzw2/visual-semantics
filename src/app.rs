@@ -103,7 +103,7 @@ impl epi::App for TemplateApp {
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
         let Self {
             label: _,
-            value,
+            value: _,
             my_enum,
             current_display_text: _,
             stack,

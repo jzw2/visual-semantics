@@ -119,7 +119,7 @@ enum BExp {
 }
 
 impl fmt::Display for BExp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
         todo!()
     }
 }
@@ -347,8 +347,8 @@ impl Rule {
                     Configuration::AExpConf(x, sigma) => match *x {
                         AExp::Id(x) => {
                             let State(v) = sigma;
-                            match v.iter().find(|(k, v)| k == &x) {
-                                Some((k, v)) => Configuration::Dummy,
+                            match v.iter().find(|(k, _v)| k == &x) {
+                                Some((_k, _v)) => Configuration::Dummy,
                                 _ => return None,
                             }
                         }
@@ -362,7 +362,7 @@ impl Rule {
 
                 match conf {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(a1, a2) => Configuration::AExpConf(a2, sigma),
+                        AExp::Plus(_a1, a2) => Configuration::AExpConf(a2, sigma),
                         _ => return None,
                     },
                     _ => return None,
@@ -387,7 +387,7 @@ impl Rule {
                 // crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
                 match conf {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Divide(a1, a2) => Configuration::AExpConf(a2, sigma),
+                        AExp::Divide(_a1, a2) => Configuration::AExpConf(a2, sigma),
                         _ => return None,
                     },
                     _ => return None,
@@ -468,7 +468,7 @@ impl Rule {
                 // crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .
                 match conf {
                     Configuration::StmtConf(s, sigm) => match *s {
-                        Stmt::IfThenElse(b_ptr, s1_ptr, s2_ptr) => {
+                        Stmt::IfThenElse(b_ptr, _s1_ptr, _s2_ptr) => {
                             Configuration::BExpConf(b_ptr, sigm)
                         }
                         _ => return None,
@@ -496,8 +496,8 @@ impl Rule {
                     Configuration::AExpConf(x, sigma) => match *x {
                         AExp::Id(x) => {
                             let State(v) = sigma.clone();
-                            match v.iter().find(|(k, v)| k == &x) {
-                                Some((k, v)) => {
+                            match v.iter().find(|(k, _v)| k == &x) {
+                                Some((_k, v)) => {
                                     Configuration::AExpConf(Box::new(AExp::Int(*v)), sigma)
                                 }
                                 _ => return None,
@@ -565,7 +565,7 @@ impl Rule {
             }
 
             Rule::RewriteLessThan => match bottom {
-                Configuration::AExpConf(x, sigma) => return None,
+                Configuration::AExpConf(_x, _sigma) => return None,
                 _ => return None,
             },
 
@@ -678,7 +678,7 @@ impl Rule {
             // crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .
             Rule::RewriteConditional => {
                 let new_bool = match top {
-                    Configuration::BExpConf(b, sigma) => b.clone(),
+                    Configuration::BExpConf(b, _sigma) => b,
                     _ => return None,
                 };
                 match bottom {
@@ -699,7 +699,7 @@ impl Rule {
                 // rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .
                 match bottom {
                     Configuration::StmtConf(s, sigm) => match *s {
-                        Stmt::IfThenElse(b_ptr, s1_ptr, s2_ptr) => match *b_ptr {
+                        Stmt::IfThenElse(b_ptr, s1_ptr, _s2_ptr) => match *b_ptr {
                             BExp::Bool(true) => {
                                 Configuration::StmtConf(Box::new(Stmt::StmtBlock(s1_ptr)), sigm)
                             }
@@ -713,7 +713,7 @@ impl Rule {
             // rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .
             Rule::RewriteConditionalFalse => match bottom {
                 Configuration::StmtConf(s, sigm) => match *s {
-                    Stmt::IfThenElse(b_ptr, s1_ptr, s2_ptr) => match *b_ptr {
+                    Stmt::IfThenElse(b_ptr, _s1_ptr, s2_ptr) => match *b_ptr {
                         BExp::Bool(false) => {
                             Configuration::StmtConf(Stmt::StmtBlock(s2_ptr).into(), sigm)
                         }
