@@ -9,10 +9,16 @@ use nom::{
   sequence::delimited,
   character::complete::multispace0,
   character::complete::digit1,
-  number::complete::i32;
+  character::complete::alpha1,
+  number::complete::be_i32,
+  branch::alt,
+  multi::many0,
 };
 
+
+
 use crate::ast::AExp;
+use crate::ast::BExp;
 
 fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
   where
@@ -26,32 +32,65 @@ fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl FnMut(&'a str) -> 
 }
 
 fn parenth(input: &str) -> IResult<&str, AExp> {
-    delimited(tag("("), aexpr, tag(")"))(input)
+  delimited(
+    multispace0,
+    delimited(tag("("), aexpr, tag(")")),
+    multispace0
+  )(input)
 }
 
+fn var(input: &str) -> IResult<&str, AExp> {
+    let (input, var) = delimited(
+      multispace0,
+      alpha1,
+      multispace0
+    )(input)?;
+    Ok((input, AExp::Id(var.to_string())))
+}
 fn int(input: &str) -> IResult<&str, AExp> {
-    let (input, dig) = nom::number::complete::i32(input)?;
-    Ok((input, AExp::Int(dig)))
+    // let (input, dig) = nom::number::complete::be_i32(input)?;
+    // Ok((input, AExp::Int(dig)))
+    let (input, num) = delimited(
+      multispace0,
+      digit1,
+      multispace0
+    )(input)?;
+    Ok((input, AExp::Int(num.parse().unwrap())))
+}
+
+fn not_bin(input: &str) -> IResult<&str, AExp> {
+    (alt((parenth, int, var)))(input)
+}
+fn div_extra(input: &str) -> IResult<&str, Vec<AExp>> {
+    many0(preceded(tag("/"), not_bin))(input)
 }
 fn div(input: &str) -> IResult<&str, AExp> {
-    let (input, exp1) = alt(parenth, todo!());
-    todo!()
+    // let (input, exp1) = alt(parenth, todo!());
+    let (input, (init, extra)) = tuple((not_bin, div_extra))(input)?;
+    Ok((input, extra.into_iter().fold(init, |acc, x| AExp::Divide(Box::new(acc), Box::new(x)))))
 }
-fn maybe_plus(input: &str) -> IResult<&str, Option<AExp>> {
-    match preceded(tag("+"), plus)(input) {
-        Ok((input, x)) => Ok((input, Some(x))),
-        Err(_) => Ok((input, None))
-    }
+
+// plus ::= plus + div_exp | div_exp
+// plus ::= div_exp plus'
+// plus' ::= (+div_exp) plus' | nothing
+
+fn plus_extra(input: &str) -> IResult<&str, Vec<AExp>> {
+    many0(preceded(tag("+"), div))(input)
 }
 fn plus(input: &str) -> IResult<&str, AExp> {
-    let (input, (exp1, exp2)) = tuple((div, maybe_plus))(input)?;
-    match exp2 {
-        Some(x) => Ok((input, AExp::Plus(Box::new(exp1), Box::new(x)))),
-        None => Ok((input, exp1))
-    }
+    let (input, (init, extra)) = tuple((div, plus_extra))(input)?;
+    Ok((input, extra.into_iter().fold(init, |acc, x| AExp::Plus(Box::new(acc), Box::new(x)))))
 }
 fn aexpr(input: &str) -> IResult<&str, AExp> {
-    let exp1 = plus(input)?;
-    todo!()
+    plus(input)
+}
 
+fn and_extra(input: &str) -> IResult<&str, Vec<AExp>> {
+    many0(preceded(tag("&&"), aexpr))(input)
+}
+
+fn bexp(input: &str) -> IResult<&str, BExp> {
+    let (input, (init, extra)) = tuple((div, and_extra))(input)?;
+    //Ok((input, extra.into_iter().fold(init, |acc, x| AExp::Plus(Box::new(acc), Box::new(x)))))
+    todo!()
 }

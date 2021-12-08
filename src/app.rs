@@ -132,38 +132,129 @@ impl epi::App for TemplateApp {
                 ui.spacing_mut().item_spacing.x = 50.0;
             });
 
-            ui.radio_value(my_enum, Rule::RewriteVariableLookup, "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
-            ui.radio_value(my_enum, Rule::RewritePlusLeft, "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewritePlusRight, "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewritePlus, " rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .");
-
-            ui.radio_value(my_enum, Rule::RewriteDivideLeft, "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteDivideRight, "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteDivide, "crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .");
+            egui::Grid::new("some_unique_id").show(ui, |ui| {
+                ui.label("Variable Lookup");
+                ui.radio_value(my_enum, Rule::RewriteVariableLookup, "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
+                ui.end_row();
             
-        
-            ui.radio_value(my_enum, Rule::RewriteLessThanLeft, "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteLessThanRight, "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteLessThan, "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteNegate, "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteNegateTrue, "rl o < ! true,Sigma > => < false,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteNegateFalse, "rl o < ! false,Sigma > => < true,Sigma > .");
+                ui.label("Plus Left");
+                ui.radio_value(my_enum, Rule::RewritePlusLeft, "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+                ui.end_row();
             
-            ui.radio_value(my_enum, Rule::RewriteBlockStatement, "rl o < {S},Sigma > => < S,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
+                ui.label("Plus Right");
+                ui.radio_value(my_enum, Rule::RewritePlusRight, "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+                ui.end_row();
 
-            ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
-            ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
+                ui.label("Plus");
+                ui.radio_value(my_enum, Rule::RewritePlus, "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+                ui.end_row();
+
+                ui.label("Divide Left");
+                ui.radio_value(my_enum, Rule::RewriteDivideLeft, "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+                ui.end_row();
+
+                ui.label("Divide Right");
+                ui.radio_value(my_enum, Rule::RewriteDivideRight, "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+                ui.end_row();
+
+                ui.label("Divide");
+                ui.radio_value(my_enum, Rule::RewriteDivide, "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+                ui.end_row();
+
+                ui.label("Less Than Left");
+                ui.radio_value(my_enum, Rule::RewriteLessThanLeft, "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+                ui.end_row();
+
+                ui.label("Less Than Right");
+                ui.radio_value(my_enum, Rule::RewriteLessThanRight, "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+                ui.end_row();
+
+                ui.label("Less Than");
+                ui.radio_value(my_enum, Rule::RewriteLessThan, "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
+                ui.end_row();
+
+                ui.label("Negate");
+                ui.radio_value(my_enum, Rule::RewriteNegate, "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
+                ui.end_row();
+
+                ui.label("Negate True");
+                ui.radio_value(my_enum, Rule::RewriteNegateTrue, "rl o < ! true,Sigma > => < false,Sigma > .");
+                ui.end_row();
+
+                ui.label("Negate False");
+                ui.radio_value(my_enum, Rule::RewriteNegateFalse, "rl o < ! false,Sigma > => < true,Sigma > .");
+                ui.end_row();
+
+                ui.label("Block Statement");
+                ui.radio_value(my_enum, Rule::RewriteBlockStatement, "rl o < {S},Sigma > => < S,Sigma > .");
+                ui.end_row();
+
+                ui.label("Assignment Arithmetic");
+                ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
+                ui.end_row();
+
+                ui.label("Assignment Int");
+                ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
+                ui.end_row();
+                
+                ui.label("Rewrite Sequence");
+                ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
+                ui.end_row();
+                
+                ui.label("Empty Block");
+                ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
+                ui.end_row();
+
+                ui.label("Conditional");
+                ui.radio_value(my_enum, Rule::RewriteConditional, "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
+                ui.end_row();
+
+                ui.label("Conditional True");
+                ui.radio_value(my_enum, Rule::RewriteConditionalTrue, "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
+                ui.end_row();
+
+                ui.label("Conditional False");
+                ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
+                ui.end_row();
+                
+                ui.label("Loop");
+                ui.radio_value(my_enum, Rule::RewriteLoop, "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
+                ui.end_row();
+
+                ui.label("Top");
+                ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
+                ui.end_row();
+            });
+
+            // ui.radio_value(my_enum, Rule::RewriteVariableLookup, "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
+            // ui.radio_value(my_enum, Rule::RewritePlusLeft, "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+            //ui.radio_value(my_enum, Rule::RewritePlusRight, "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+            //ui.radio_value(my_enum, Rule::RewritePlus, " rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .");
+
+            // ui.radio_value(my_enum, Rule::RewriteDivideLeft, "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteDivideRight, "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteDivide, "crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .");
             
-            ui.radio_value(my_enum, Rule::RewriteConditional, "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
-            ui.radio_value(my_enum, Rule::RewriteConditionalTrue, "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
-            ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteLessThanLeft, "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteLessThanRight, "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteLessThan, "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteNegate, "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteNegateTrue, "rl o < ! true,Sigma > => < false,Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteNegateFalse, "rl o < ! false,Sigma > => < true,Sigma > .");
+            
+            // ui.radio_value(my_enum, Rule::RewriteBlockStatement, "rl o < {S},Sigma > => < S,Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
 
-            ui.radio_value(my_enum, Rule::RewriteLoop, "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
+            // ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
+            
+            // ui.radio_value(my_enum, Rule::RewriteConditional, "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
+            // ui.radio_value(my_enum, Rule::RewriteConditionalTrue, "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
 
-
-            ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
+            // ui.radio_value(my_enum, Rule::RewriteLoop, "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
+            // ui.radio_value(my_enum, Rule::RewriteTop, "rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             // ui.heading("Side Panel");
 
@@ -185,28 +276,6 @@ impl epi::App for TemplateApp {
             //         ui.hyperlink_to("eframe", "https://github.com/emilk/egui/tree/master/eframe");
             //     });
             // });
-            //
-            // ui.label("crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
-            // ui.label("crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            // ui.label("crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            // ui.label("rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .");
-            // ui.label("crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            // ui.label("crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            // ui.label("crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .");
-            // ui.label("crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
-            // ui.label("crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
-            // ui.label("rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
-            // ui.label("crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
-            // ui.label("rl o < ! true,Sigma > => < false,Sigma > .");
-            // ui.label("rl o < ! false,Sigma > => < true,Sigma > .");
-            // ui.label("crl o < B1 && B2,Sigma > => < B1' && B2,Sigma > if o < B1,Sigma > => < B1',Sigma > .");
-            // ui.label("rl o < false && B2,Sigma > => < false,Sigma > .");
-            // ui.label("rl o < true && B2,Sigma > => < B2,Sigma > .");
-            // ui.label("rl o < {S},Sigma > => < S,Sigma > .");
-            // ui.label("crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
-            // ui.label("rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
-            // ui.label("rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
-            // ui.label("rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
 
             // ui.label("rl o < {} S2,Sigma > => < S2,Sigma > .");
             // ui.label("crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
@@ -237,7 +306,9 @@ impl epi::App for TemplateApp {
             //     ui.style_mut().wrap = Some(false);
         
             // });
-
+            if ui.button("Clear").clicked() {
+                println!("UnDO!!!!!!");
+            }
             ui.label(format!("{}", stack));
         });
     }

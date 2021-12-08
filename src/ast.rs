@@ -111,7 +111,7 @@ impl fmt::Display for AExp {
     }
 }
 #[derive(Clone, Debug)]
-enum BExp {
+pub enum BExp {
     LessThanEq(Box<AExp>, Box<AExp>),
     Negation(Box<BExp>),
     And(Box<BExp>, Box<BExp>),
@@ -125,7 +125,7 @@ impl fmt::Display for BExp {
 }
 
 #[derive(Clone, Debug)]
-enum Stmt {
+pub enum Stmt {
     StmtBlock(Box<Block>),
     Assign(String, Box<AExp>),
     Sequence(Box<Stmt>, Box<Stmt>),
@@ -134,7 +134,7 @@ enum Stmt {
 }
 
 #[derive(Clone, Debug)]
-enum Block {
+pub enum Block {
     EmptyBlock,
     BlockStmt(Box<Stmt>),
 }
@@ -206,35 +206,15 @@ impl fmt::Display for Stack {
 }
 impl Stack {
     pub fn new() -> Stack {
-        // let variables = vec!["x".to_string(), "y".to_string()];
-        // let assign_x = Stmt::Assign("x".to_string(), Box::new(AExp::Int(5)));
-        // let assign_y = Stmt::Assign("y".to_string(), Box::new(AExp::Int(7)));
-        // let evaluate_x = AExp::Id("x".to_string());
-        // let set_y_to_x = Stmt::Assign("y".to_string(), Box::new(evaluate_x));
-
-        // let program = Stmt::Sequence(
-        //     assign_x.into(),
-        //     Box::new(Stmt::Sequence(Box::new(assign_y), Box::new(set_y_to_x))),
-        // );
-        // Stack {
-        //     stack: vec![Configuration::PgmConf(Box::new(Pgm::Program(
-        //         variables, program,
-        //     )))],
-        //     rules: vec![],
-        // }
         let variables = vec!["x".to_string(), "y".to_string()];
         let assign_x = Stmt::Assign("x".to_string(), Box::new(AExp::Int(5)));
         let assign_y = Stmt::Assign("y".to_string(), Box::new(AExp::Int(7)));
         let evaluate_x = AExp::Id("x".to_string());
-        let evaluate_y = AExp::Id("y".to_string());
-        let add_to_x = AExp::Plus(Box::new(evaluate_x), Box::new(AExp::Int(1)));
-        let add_to_x2 = Stmt::Assign("x".to_string(), Box::new(add_to_x));
-        let less_xy = BExp::LessThanEq(Box::new(evaluate_x), Box::new(evaluate_y));
-        let while_xy = Stmt::While(Box::new(less_xy_, Box::new(Block::BlockStmt(Box::new(add_to_x2))));)
+        let set_y_to_x = Stmt::Assign("y".to_string(), Box::new(evaluate_x));
 
         let program = Stmt::Sequence(
             assign_x.into(),
-            Box::new(Stmt::Sequence(Box::new(assign_y), Box::new(while_xy))),
+            Box::new(Stmt::Sequence(Box::new(assign_y), Box::new(set_y_to_x))),
         );
         Stack {
             stack: vec![Configuration::PgmConf(Box::new(Pgm::Program(
@@ -819,6 +799,7 @@ impl Rule {
                         Pgm::Program(xl, s) => {
                             Configuration::StmtConf(s.into(), State::create_state(xl))
                         }
+                        _ => return None,
                     },
                     _ => return None,
                 }
