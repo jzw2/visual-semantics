@@ -1,5 +1,6 @@
 use crate::ast::Rule;
 use crate::ast::Stack;
+use eframe::egui::color::Color32;
 use eframe::{egui, epi};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -16,6 +17,7 @@ pub struct TemplateApp {
     current_display_text: String,
     stack: Stack,
 }
+
 
 impl Rule {
     fn to_string(&self) -> String {
@@ -126,7 +128,9 @@ impl epi::App for TemplateApp {
         });
 
         egui::SidePanel::left("side_panel").min_width(500.0).show(ctx, |ui| {
-
+            ui.horizontal_wrapped(|ui|{
+                ui.spacing_mut().item_spacing.x = 50.0;
+            });
 
             ui.radio_value(my_enum, Rule::RewriteVariableLookup, "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
             ui.radio_value(my_enum, Rule::RewritePlusLeft, "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
@@ -210,8 +214,8 @@ impl epi::App for TemplateApp {
             // ui.label("crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
             // ui.label("rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
-
-            if ui.button("Apply").clicked() {
+            let button = egui::Button::new("Apply").text_color(Color32::BLUE).fill(Color32::WHITE);
+            if ui.add_sized([80.0, 20.0], button).clicked() {
                 stack.applyRule(my_enum.clone());
             }
         });
@@ -228,6 +232,12 @@ impl epi::App for TemplateApp {
             // egui::warn_if_debug_build(ui);
 
             //println!("{:?}", current_display_text);
+            // ui.scope(|ui|{
+            //     ui.visuals_mut().override_text_color = Some(egui::Color32::RED);
+            //     ui.style_mut().wrap = Some(false);
+        
+            // });
+
             ui.label(format!("{}", stack));
         });
     }
