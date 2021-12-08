@@ -283,8 +283,11 @@ impl epi::App for TemplateApp {
             // ui.label("crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
             // ui.label("rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
-            let button = egui::Button::new("Apply").text_color(Color32::BLUE).fill(Color32::WHITE);
-            if ui.add_sized([80.0, 20.0], button).clicked() {
+            // let button = egui::Button::new("Apply").text_color(Color32::BLUE).fill(Color32::WHITE);
+            // if ui.add_sized([80.0, 20.0], button).clicked() {
+            //     stack.applyRule(my_enum.clone());
+            // }
+            if ui.button("Apply").clicked() {
                 stack.applyRule(my_enum.clone());
             }
         });
@@ -306,8 +309,8 @@ impl epi::App for TemplateApp {
             //     ui.style_mut().wrap = Some(false);
         
             // });
-            if ui.button("Clear").clicked() {
-                println!("UnDO!!!!!!");
+            if ui.button("Undo").clicked() {
+                stack.pop();
             }
             ui.label(format!("{}", stack));
         });

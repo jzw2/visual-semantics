@@ -7,6 +7,7 @@ use nom::{
    error::ParseError,
   combinator::value,
   sequence::delimited,
+  sequence::separated_pair,
   character::complete::multispace0,
   character::complete::digit1,
   character::complete::alpha1,
@@ -85,12 +86,21 @@ fn aexpr(input: &str) -> IResult<&str, AExp> {
     plus(input)
 }
 
-fn and_extra(input: &str) -> IResult<&str, Vec<AExp>> {
-    many0(preceded(tag("&&"), aexpr))(input)
+
+
+fn ltexp(input: &str) -> IResult<&str, BExp> {
+    let (input, (left, right)) = separated_pair(aexpr, tag("<="), aexpr)(input)?;
+    Ok((input, (BExp::LessThanEq(Box::new(left), Box::new(right)))))
+}
+fn and_extra(input: &str) -> IResult<&str, Vec<BExp>> {
+    many0(preceded(tag("&&"), ltexp))(input)
 }
 
+// bexp ::= bexp && ltexp | ltexp | ( bexp )
+// plus ::= div_exp plus'
+// plus' ::= (+div_exp) plus' | nothing
 fn bexp(input: &str) -> IResult<&str, BExp> {
-    let (input, (init, extra)) = tuple((div, and_extra))(input)?;
-    //Ok((input, extra.into_iter().fold(init, |acc, x| AExp::Plus(Box::new(acc), Box::new(x)))))
+    //let (input, (init, extra)) = alt((tuple((ltexp, and_extra))))(input)?;
+    //Ok((input, extra.into_iter().fold(init, |acc, x| BExp::And(Box::new(acc), Box::new(x)))))
     todo!()
 }

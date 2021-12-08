@@ -119,8 +119,21 @@ pub enum BExp {
 }
 
 impl fmt::Display for BExp {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!()
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BExp::LessThanEq(a, s) => {
+                write!(f, "{} <= {}", a.to_string(), s.to_string())
+            }
+            BExp::Negation(a) => {
+                write!(f, "!({})", a.to_string())
+            }
+            BExp::And(a, s) => {
+                write!(f, "{} && {}", a.to_string(), s.to_string())
+            }
+            BExp::Bool(a) => {
+                write!(f, "{}", a)
+            }
+        }
     }
 }
 
@@ -206,15 +219,35 @@ impl fmt::Display for Stack {
 }
 impl Stack {
     pub fn new() -> Stack {
+        // let variables = vec!["x".to_string(), "y".to_string()];
+        // let assign_x = Stmt::Assign("x".to_string(), Box::new(AExp::Int(5)));
+        // let assign_y = Stmt::Assign("y".to_string(), Box::new(AExp::Int(7)));
+        // let evaluate_x = AExp::Id("x".to_string());
+        // let set_y_to_x = Stmt::Assign("y".to_string(), Box::new(evaluate_x));
+
+        // let program = Stmt::Sequence(
+        //     assign_x.into(),
+        //     Box::new(Stmt::Sequence(Box::new(assign_y), Box::new(set_y_to_x))),
+        // );
+        // Stack {
+        //     stack: vec![Configuration::PgmConf(Box::new(Pgm::Program(
+        //         variables, program,
+        //     )))],
+        //     rules: vec![],
+        // }
         let variables = vec!["x".to_string(), "y".to_string()];
         let assign_x = Stmt::Assign("x".to_string(), Box::new(AExp::Int(5)));
         let assign_y = Stmt::Assign("y".to_string(), Box::new(AExp::Int(7)));
         let evaluate_x = AExp::Id("x".to_string());
-        let set_y_to_x = Stmt::Assign("y".to_string(), Box::new(evaluate_x));
+        let evaluate_y = AExp::Id("y".to_string());
+        let add_to_x = AExp::Plus(Box::new(evaluate_x.clone()), Box::new(AExp::Int(1)));
+        let add_to_x2 = Stmt::Assign("x".to_string(), Box::new(add_to_x));
+        let less_xy = BExp::LessThanEq(Box::new(evaluate_x), Box::new(evaluate_y));
+        let while_xy = Stmt::While(Box::new(less_xy), Box::new(Block::BlockStmt(Box::new(add_to_x2))));
 
         let program = Stmt::Sequence(
             assign_x.into(),
-            Box::new(Stmt::Sequence(Box::new(assign_y), Box::new(set_y_to_x))),
+            Box::new(Stmt::Sequence(Box::new(assign_y), Box::new(while_xy))),
         );
         Stack {
             stack: vec![Configuration::PgmConf(Box::new(Pgm::Program(
@@ -261,6 +294,12 @@ impl Stack {
             }
         }
         true
+    }
+    pub fn pop(&mut self) {
+        if self.stack.len() > 1 {
+            self.stack.pop();
+            self.rules.pop();
+        }
     }
 }
 
@@ -621,7 +660,7 @@ impl Rule {
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
                         BExp::LessThanEq(box1, box2) => {
-                            Configuration::BExpConf(Box::new(BExp::LessThanEq(box1, new_arith)), sigma)
+                            Configuration::BExpConf(Box::new(BExp::LessThanEq(new_arith, box2)), sigma)
                         }
                         _ => return None,
                     },
@@ -638,7 +677,7 @@ impl Rule {
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
                         BExp::LessThanEq(box1, box2) => {
-                            Configuration::BExpConf(Box::new(BExp::LessThanEq(box2, new_arith)), sigma)
+                            Configuration::BExpConf(Box::new(BExp::LessThanEq(box1, new_arith)), sigma)
                         }
                         _ => return None,
                     },
@@ -829,13 +868,11 @@ impl Rule {
                 };
                 match bottom {
                     Configuration::StmtConf(s, sigm) => match *s {
-                        Stmt::IfThenElse(b_ptr, s1_ptr, s2_ptr) => match *b_ptr {
-                            BExp::Bool(true) => Configuration::StmtConf(
+                        Stmt::IfThenElse(b_ptr, s1_ptr, s2_ptr) => 
+                            Configuration::StmtConf(
                                 Stmt::IfThenElse(new_bool, s1_ptr, s2_ptr).into(),
                                 sigm,
                             ),
-                            _ => return None,
-                        },
                         _ => return None,
                     },
                     _ => return None,
