@@ -20,6 +20,8 @@ use nom::{
 
 use crate::ast::AExp;
 use crate::ast::BExp;
+use crate::ast::Stmt;
+use crate::ast::Block;
 
 fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
   where
@@ -96,11 +98,143 @@ fn and_extra(input: &str) -> IResult<&str, Vec<BExp>> {
     many0(preceded(tag("&&"), ltexp))(input)
 }
 
-// bexp ::= bexp && ltexp | ltexp | ( bexp )
+// bexp ::= bexp && ltexp | ltexp | ( bexp ) | ! bexp | bool
 // plus ::= div_exp plus'
 // plus' ::= (+div_exp) plus' | nothing
+//
+//
+
+
+fn parse_true(input: &str) -> IResult<&str, BExp> {
+  let (input, b) = delimited(multispace0,
+      tag("true"),
+      multispace0
+    )(input)?;
+  Ok((input, BExp::Bool(true)))
+}
+
+fn parse_false(input: &str) -> IResult<&str, BExp> {
+  let (input, _) = delimited(multispace0,
+      tag("false"),
+      multispace0
+    )(input)?;
+  Ok((input, BExp::Bool(false)))
+}
+fn bool_const(input: &str) -> IResult<&str, BExp> {
+  alt((parse_true, parse_false))(input)
+}
+fn not(input: &str) -> IResult<&str, BExp> {
+  let (input, _) = delimited(multispace0,
+      tag("!"),
+      multispace0
+    )(input)?;
+  let (input, b) = bexp(input)?;
+  Ok((input, BExp::Negation(Box::new(b))))
+}
+fn bexp_parens(input: &str) -> IResult<&str, BExp> {
+  delimited(tag("("), delimited(multispace0,
+      bexp,
+      multispace0
+    ), tag(")"))(input)
+}
+
 fn bexp(input: &str) -> IResult<&str, BExp> {
-    //let (input, (init, extra)) = alt((tuple((ltexp, and_extra))))(input)?;
-    //Ok((input, extra.into_iter().fold(init, |acc, x| BExp::And(Box::new(acc), Box::new(x)))))
-    todo!()
+    let (input, (init, extra)) = tuple((alt((ltexp, bexp_parens, not, bool_const)), and_extra))(input)?;
+    Ok((input, extra.into_iter().fold(init, |acc, x| BExp::And(Box::new(acc), Box::new(x)))))
+}
+
+
+fn open_bracket(input: &str) -> IResult<&str, &str> {
+  delimited(multispace0,
+      tag("{"),
+      multispace0
+    )(input)
+}
+
+fn closed_bracket(input: &str) -> IResult<&str, &str> {
+  delimited(multispace0,
+      tag("}"),
+      multispace0
+    )(input)
+}
+fn block(input: &str) -> IResult<&str, Stmt> {
+  let (input, s) = delimited(open_bracket, many0(stmt), closed_bracket)(input)?;
+
+  let new_block = match s.into_iter().reduce(|acc, x| Stmt::Sequence(Box::new(acc), Box::new(x))) {
+    Some(x) => {
+        Block::BlockStmt(Box::new(x))
+    }
+    None => Block::EmptyBlock
+  };
+
+  Ok((input, Stmt::StmtBlock(Box::new(new_block))))
+
+}
+
+
+fn semicolon(input: &str) -> IResult<&str, &str> {
+
+  delimited(multispace0,
+      tag(";"),
+      multispace0
+    )(input)
+}
+fn assign(input: &str) -> IResult<&str, Stmt> {
+  todo!()
+}
+fn ifthenelse(input: &str) -> IResult<&str, Stmt> {
+  todo!()
+}
+
+fn while_loop(input: &str) -> IResult<&str, Stmt> {
+  todo!()
+}
+
+fn stmt(input: &str) -> IResult<&str, Stmt> {
+  todo!()
+
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_arith1() {
+      match aexpr("1") {
+        Ok((_, AExp::Int(1))) => {},
+        _ => panic!(),
+      };
+    }
+
+    #[test]
+    fn test_arith2() {
+      match aexpr("1 + 2") {
+        Ok((_, AExp::Plus(x, y))) => {
+          match (*x, *y) {
+            (AExp::Int(1), AExp::Int(2)) => {},
+            _ => panic!(),
+          }
+        },
+        _ => panic!(),
+      };
+    }
+    #[test]
+    fn test_arith3() {
+      match aexpr("1 + 2 + 3") {
+        Ok((_, AExp::Plus(x, y))) => {
+          match (*x, *y) {
+            (AExp::Plus(x, y), AExp::Int(3)) => {
+
+              match (*x, *y) {
+                (AExp::Int(1), AExp::Int(2)) => {},
+                _ => panic!(),
+              }
+            },
+            _ => panic!(),
+          }
+        },
+        _ => panic!(),
+      };
+    }
 }
