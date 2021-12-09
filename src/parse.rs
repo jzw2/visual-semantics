@@ -197,44 +197,89 @@ fn stmt(input: &str) -> IResult<&str, Stmt> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+  use super::*;
 
-    #[test]
-    fn test_arith1() {
-      match aexpr("1") {
-        Ok((_, AExp::Int(1))) => {},
-        _ => panic!(),
-      };
-    }
+  #[test]
+  fn test_arith1() {
+    match aexpr("1") {
+      Ok((_, AExp::Int(1))) => {},
+      _ => panic!(),
+    };
+  }
 
-    #[test]
-    fn test_arith2() {
-      match aexpr("1 + 2") {
-        Ok((_, AExp::Plus(x, y))) => {
-          match (*x, *y) {
-            (AExp::Int(1), AExp::Int(2)) => {},
-            _ => panic!(),
+  #[test]
+  fn test_arith2() {
+    match aexpr("1 + 2") {
+      Ok((_, AExp::Plus(x, y))) => {
+        match (*x, *y) {
+          (AExp::Int(1), AExp::Int(2)) => {},
+          _ => panic!(),
+        }
+      },
+      _ => panic!(),
+    };
+  }
+  #[test]
+  fn test_arith3() {
+    match aexpr("1 + 2 + 3") {
+      Ok((_, AExp::Plus(x, y))) => {
+        match (*x, *y) {
+          (AExp::Plus(x, y), AExp::Int(3)) => {
+
+            match (*x, *y) {
+              (AExp::Int(1), AExp::Int(2)) => {},
+              _ => panic!(),
+            }
+          },
+          _ => panic!(),
+        }
+      },
+      _ => panic!(),
+    };
+  }
+  #[test]
+  fn test_arith4() {
+    match aexpr("1 / 3 + (2 + x ) + 3 / 1") {
+      Ok((_, AExp::Plus(x, y))) => {
+        match *y {
+          AExp::Divide(x, y) => {
+            match (*x, *y) {
+              (AExp::Int(3), AExp::Int(1)) => {},
+              _ => panic!(),
+            }
           }
-        },
-        _ => panic!(),
-      };
-    }
-    #[test]
-    fn test_arith3() {
-      match aexpr("1 + 2 + 3") {
-        Ok((_, AExp::Plus(x, y))) => {
-          match (*x, *y) {
-            (AExp::Plus(x, y), AExp::Int(3)) => {
+          _ => panic!(),
+        }
+        match *x {
+          AExp::Plus(x, y) => {
 
-              match (*x, *y) {
-                (AExp::Int(1), AExp::Int(2)) => {},
-                _ => panic!(),
+            match *y {
+              AExp::Plus(x, y) => {
+                match (*x, *y) {
+                  (AExp::Int(2), AExp::Id(z)) if z == "x" => {
+
+                  }
+                  _ => panic!(),
+                }
+
+
               }
-            },
-            _ => panic!(),
+              _ => panic!(),
+            }
+            match *x {
+              AExp::Divide(x, y) => {
+                match (*x, *y) {
+                  (AExp::Int(1), AExp::Int(3)) => {},
+                  _ => panic!(),
+                }
+              }
+              _ => panic!(),
+            }
           }
-        },
-        _ => panic!(),
-      };
+          _ => panic!(),
+        }
+      }
+      _ => panic!(),
     }
+  }
 }
