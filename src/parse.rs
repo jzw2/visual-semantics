@@ -4,6 +4,7 @@ use nom::{
   combinator::map_res,
   sequence::tuple ,
   sequence::preceded ,
+  sequence::terminated ,
    error::ParseError,
   combinator::value,
   sequence::delimited,
@@ -14,6 +15,7 @@ use nom::{
   number::complete::be_i32,
   branch::alt,
   multi::many0,
+  multi::separated_list1,
 };
 
 
@@ -22,6 +24,7 @@ use crate::ast::AExp;
 use crate::ast::BExp;
 use crate::ast::Stmt;
 use crate::ast::Block;
+use crate::ast::Pgm;
 
 fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
   where
@@ -157,17 +160,24 @@ fn closed_bracket(input: &str) -> IResult<&str, &str> {
       multispace0
     )(input)
 }
-fn block(input: &str) -> IResult<&str, Stmt> {
-  let (input, s) = delimited(open_bracket, many0(stmt), closed_bracket)(input)?;
 
-  let new_block = match s.into_iter().reduce(|acc, x| Stmt::Sequence(Box::new(acc), Box::new(x))) {
+
+fn seq_list(input: &str) -> IResult<&str, Option<Stmt>> {
+  let (input, s) = many0(stmt)(input)?;
+  let new_stmt = s.into_iter().reduce(|acc, x| Stmt::Sequence(Box::new(acc), Box::new(x)));
+  Ok((input, new_stmt))
+}
+fn block(input: &str) -> IResult<&str, Block> {
+  let (input, s) = delimited(open_bracket, seq_list, closed_bracket)(input)?;
+
+  let new_block = match s {
     Some(x) => {
         Block::BlockStmt(Box::new(x))
     }
     None => Block::EmptyBlock
   };
 
-  Ok((input, Stmt::StmtBlock(Box::new(new_block))))
+  Ok((input, (new_block)))
 
 }
 
@@ -180,18 +190,27 @@ fn semicolon(input: &str) -> IResult<&str, &str> {
     )(input)
 }
 fn assign(input: &str) -> IResult<&str, Stmt> {
-  todo!()
+  let (input, (v, s)) = terminated(separated_pair(var, tag("="), aexpr), semicolon)(input)?;
+  Ok((input, Stmt::Assign(v.to_string(), Box::new(s))))
 }
 fn ifthenelse(input: &str) -> IResult<&str, Stmt> {
-  todo!()
+  let (input, (_, b, s1, _, s2)) = tuple((tag("if"), bexp, block, tag("else"), block))(input)?;
+  Ok((input, Stmt::IfThenElse(Box::new(b), Box::new(s1), Box::new(s2))))
 }
 
 fn while_loop(input: &str) -> IResult<&str, Stmt> {
-  todo!()
+  let (input, (_, b, s)) = tuple((tag("while"), bexp, block))(input)?;
+  Ok((input, Stmt::While(Box::new(b), Box::new(s))))
 }
 
 fn stmt(input: &str) -> IResult<&str, Stmt> {
-  todo!()
+  alt((assign, ifthenelse, while_loop))(input)
+}
+
+fn pgm(input: &str) -> IResult<&str, Pgm> {
+  let (input, (_, vs, s)) = tuple((tag("int"), separated_list1(tag(","), var), stmt))(input)?;
+
+  Ok((input, Pgm::Program(vs.iter().map(|x| x.to_string()).collect(), s)))
 
 }
 

@@ -40,7 +40,7 @@ impl State {
     }
 }
 #[derive(Clone, Debug)]
-enum Pgm {
+pub enum Pgm {
     Program(Vec<String>, Stmt),
 }
 
