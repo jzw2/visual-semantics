@@ -373,7 +373,65 @@ pub enum Rule {
     NoOp,
 }
 
+
 impl Rule {
+    fn list_of_rules() -> Vec<Rule> {
+vec![
+             Rule::RewriteVariableLookup ,
+             Rule::RewritePlusLeft ,
+             Rule::RewritePlusRight ,
+             Rule::RewritePlus ,
+             Rule::RewriteDivideLeft ,
+             Rule::RewriteDivideRight ,
+             Rule::RewriteDivide ,
+             Rule::RewriteLessThanLeft ,
+             Rule::RewriteLessThanRight ,
+             Rule::RewriteLessThan ,
+             Rule::RewriteNegate ,
+             Rule::RewriteNegateTrue ,
+             Rule::RewriteNegateFalse ,
+             Rule::RewriteBlockStatement ,
+             Rule::RewriteAssignmentArith ,
+             Rule::RewriteAssignmentInt ,
+             Rule::RewriteSequence ,
+             Rule::RewriteEmptyBlock ,
+             Rule::RewriteConditional ,
+             Rule::RewriteConditionalTrue ,
+             Rule::RewriteConditionalFalse ,
+
+             Rule::RewriteLoop ,
+             Rule::RewriteTop  ,
+             Rule::NoOp  ,
+]    }
+    fn get_description(&self) -> String {
+        match self {
+             Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
+             Rule::RewritePlusLeft => "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
+             Rule::RewritePlusRight => "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
+             Rule::RewritePlus => " rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .".to_string(),
+             Rule::RewriteDivideLeft => "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
+             Rule::RewriteDivideRight => "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
+             Rule::RewriteDivide => "crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .".to_string(),
+             Rule::RewriteLessThanLeft => "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
+             Rule::RewriteLessThanRight => "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
+             Rule::RewriteLessThan => "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .".to_string(),
+             Rule::RewriteNegate => "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .".to_string(),
+             Rule::RewriteNegateTrue => "rl o < ! true,Sigma > => < false,Sigma > .".to_string(),
+             Rule::RewriteNegateFalse => "rl o < ! false,Sigma > => < true,Sigma > .".to_string(),
+             Rule::RewriteBlockStatement => "rl o < {S},Sigma > => < S,Sigma > .".to_string(),
+             Rule::RewriteAssignmentArith => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
+             Rule::RewriteAssignmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
+             Rule::RewriteSequence => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
+             Rule::RewriteEmptyBlock => "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
+             Rule::RewriteConditional => "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .".to_string(),
+             Rule::RewriteConditionalTrue => "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .".to_string(),
+             Rule::RewriteConditionalFalse => "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .".to_string(),
+
+             Rule::RewriteLoop => "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .".to_string(),
+             Rule::RewriteTop  => "rl o < int Xl ; S > => < S,(Xl |-> 0) > .".to_string(),
+             Rule::NoOp  => "This was not supposed to be available".to_string(),
+        }
+    }
     fn get_next_configuration(&self, conf: Configuration) -> Option<Configuration> {
         let ret = match self {
             Rule::RewritePlus => Configuration::Dummy,
