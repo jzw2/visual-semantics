@@ -268,6 +268,30 @@ impl Stack {
             rules: vec![],
         }
     }
+    pub fn can_apply_rule(&self, rule: Rule) -> bool {
+        let last = self.stack.last().expect("oops");
+        let next_configuration = rule.get_next_configuration(last.clone());
+        println!("{:?}", next_configuration);
+        match next_configuration {
+            Some(Configuration::Dummy) => {
+                let mut top_conf = Configuration::Dummy;
+                    let bottom_conf = last;
+                    println!("{:?}", self);
+                    match rule.reduce_down(bottom_conf.clone(), top_conf) {
+                        None => {
+                            false
+                        }
+                        Some(x) => true
+                    }
+            }
+            Some(conf) => {
+                true
+            }
+            None => {
+                false
+            }
+        }
+    }
     // true means a sucess apply, false failed to apply rule
     pub fn applyRule(&mut self, rule: Rule) -> bool {
         println!("{:?}", self);
@@ -377,7 +401,7 @@ pub enum Rule {
 }
 
 impl Rule {
-    fn list_of_rules() -> Vec<Rule> {
+    pub fn list_of_rules() -> Vec<Rule> {
         vec![
             Rule::RewriteVariableLookup,
             Rule::RewritePlusLeft,
@@ -402,10 +426,9 @@ impl Rule {
             Rule::RewriteConditionalFalse,
             Rule::RewriteLoop,
             Rule::RewriteTop,
-            Rule::NoOp,
         ]
     }
-    fn get_description(&self) -> String {
+    pub fn get_description(&self) -> String {
         match self {
              Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
              Rule::RewritePlusLeft => "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
@@ -434,6 +457,7 @@ impl Rule {
              Rule::NoOp  => "This was not supposed to be available".to_string(),
         }
     }
+
     fn get_next_configuration(&self, conf: Configuration) -> Option<Configuration> {
         let ret = match self {
             Rule::RewritePlus => Configuration::Dummy,
