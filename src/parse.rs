@@ -208,10 +208,20 @@ fn stmt(input: &str) -> IResult<&str, Stmt> {
 }
 
 fn pgm(input: &str) -> IResult<&str, Pgm> {
-  let (input, (_, vs, s)) = tuple((tag("int"), separated_list1(tag(","), var), stmt))(input)?;
-
+  let (input, (_, vs, s, _)) = tuple((tag("int"), separated_list1(tag(","), var), seq_list, semicolon))(input)?;
+  let s = match s {
+    Some(s) => s,
+    None  => Stmt::StmtBlock(Box::new(Block::EmptyBlock)),
+  };
   Ok((input, Pgm::Program(vs.iter().map(|x| x.to_string()).collect(), s)))
 
+}
+
+pub fn parse(input: String) -> Option<Pgm> {
+  match delimited(multispace0, pgm, multispace0)(&input) {
+    Ok(("", x)) => Some(x),
+    _ => None,
+  }
 }
 
 #[cfg(test)]
@@ -300,5 +310,63 @@ mod tests {
       }
       _ => panic!(),
     }
+  }
+   #[test]
+   fn test_stmt2() {
+    match seq_list("x = 1 ; x = 1; ") {
+      Ok((_, Some(Stmt::Sequence(s1, s2)))) => {
+        match *s1 {
+          Stmt::Assign(v, n) => if v == "x"{
+            match *n {
+              AExp::Int(1) => {}
+              _ => panic!()
+            }
+          }
+          _ => panic!()
+        }
+        match *s2 {
+          Stmt::Assign(v, n) => if v == "x"{
+            match *n {
+              AExp::Int(1) => {}
+              _ => panic!()
+            }
+          }
+          _ => panic!()
+        }
+      }
+
+      _ => panic!(),
+    };
+  }
+   #[test]
+   fn test_stmt1() {
+    match stmt("x = 1 ; ") {
+      Ok((_, Stmt::Assign(v, n))) => if v == "x" {
+        match *n {
+          AExp::Int(1) => {}
+          _ => panic!()
+        }
+      }
+
+      _ => panic!(),
+    };
+  }
+   #[test]
+   fn test_pgm1() {
+    match parse("int x, y; x = 1 ; ".to_string()) {
+      Some(Pgm::Program(v, s)) if v == vec!["x".to_string(), "y".to_string()] => {
+        match s {
+          Stmt::Assign(v, n) => if v == "x" {
+            match *n {
+              AExp::Int(1) => {}
+              _ => panic!()
+            }
+
+          }
+          _ => panic!()
+        }
+      },
+      _ => panic!(),
+    };
   }
 }

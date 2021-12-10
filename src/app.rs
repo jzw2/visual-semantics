@@ -16,6 +16,7 @@ pub struct TemplateApp {
     my_enum: Rule,
     current_display_text: String,
     stack: Stack,
+    start_program: String,
 }
 
 
@@ -69,6 +70,7 @@ impl Default for TemplateApp {
             my_enum: Rule::NoOp,
             current_display_text: "".to_string(),
             stack: Stack::new(),
+            start_program: "int x, y;\n  x = x + 1;".to_string(),
         }
     }
 }
@@ -109,6 +111,7 @@ impl epi::App for TemplateApp {
             my_enum,
             current_display_text: _,
             stack,
+            start_program,
         } = self;
 
         // Examples of how to create different panels and windows.
@@ -136,11 +139,11 @@ impl epi::App for TemplateApp {
                 ui.label("Variable Lookup");
                 ui.radio_value(my_enum, Rule::RewriteVariableLookup, "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .");
                 ui.end_row();
-            
+
                 ui.label("Plus Left");
                 ui.radio_value(my_enum, Rule::RewritePlusLeft, "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
                 ui.end_row();
-            
+
                 ui.label("Plus Right");
                 ui.radio_value(my_enum, Rule::RewritePlusRight, "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
                 ui.end_row();
@@ -196,11 +199,11 @@ impl epi::App for TemplateApp {
                 ui.label("Assignment Int");
                 ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
                 ui.end_row();
-                
+
                 ui.label("Rewrite Sequence");
                 ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
                 ui.end_row();
-                
+
                 ui.label("Empty Block");
                 ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
                 ui.end_row();
@@ -216,7 +219,7 @@ impl epi::App for TemplateApp {
                 ui.label("Conditional False");
                 ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
                 ui.end_row();
-                
+
                 ui.label("Loop");
                 ui.radio_value(my_enum, Rule::RewriteLoop, "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .");
                 ui.end_row();
@@ -234,21 +237,21 @@ impl epi::App for TemplateApp {
             // ui.radio_value(my_enum, Rule::RewriteDivideLeft, "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteDivideRight, "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteDivide, "crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .");
-            
+
             // ui.radio_value(my_enum, Rule::RewriteLessThanLeft, "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteLessThanRight, "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteLessThan, "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteNegate, "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteNegateTrue, "rl o < ! true,Sigma > => < false,Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteNegateFalse, "rl o < ! false,Sigma > => < true,Sigma > .");
-            
+
             // ui.radio_value(my_enum, Rule::RewriteBlockStatement, "rl o < {S},Sigma > => < S,Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteAssignmentArith, "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteAssignmentInt, "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .");
 
             // ui.radio_value(my_enum, Rule::RewriteSequence, "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .");
             // ui.radio_value(my_enum, Rule::RewriteEmptyBlock, "rl o < {} S2,Sigma > => < S2,Sigma > .");
-            
+
             // ui.radio_value(my_enum, Rule::RewriteConditional, "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .");
             // ui.radio_value(my_enum, Rule::RewriteConditionalTrue, "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .");
             // ui.radio_value(my_enum, Rule::RewriteConditionalFalse, "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .");
@@ -307,12 +310,61 @@ impl epi::App for TemplateApp {
             // ui.scope(|ui|{
             //     ui.visuals_mut().override_text_color = Some(egui::Color32::RED);
             //     ui.style_mut().wrap = Some(false);
-        
+
             // });
             if ui.button("Undo").clicked() {
                 stack.pop();
             }
             ui.label(format!("{}", stack));
+
+
+            let response = ui.add(egui::TextEdit::multiline(start_program));
+            // if response.changed() {
+            //     if let Some(s) = Stack::create_from_string(start_program.to_string()) {
+            //         println!("parsed as {:?}", s);
+            //         *stack = s;
+            //     }
+            // }
+            if ui.button("Use new program").clicked() {
+                 if let Some(s) = Stack::create_from_string(start_program.to_string()) {
+                     println!("parsed as {:?}", s);
+                     *stack = s;
+                 } else {
+
+                    println!("parse failed");
+                 }
+                println!("{:?}", stack);
+            }
         });
+    }
+
+    fn warm_up_enabled(&self) -> bool {
+        false
+    }
+
+    fn on_exit(&mut self) {}
+
+    fn auto_save_interval(&self) -> std::time::Duration {
+        std::time::Duration::from_secs(30)
+    }
+
+    fn max_size_points(&self) -> egui::Vec2 {
+        // Some browsers get slow with huge WebGL canvases, so we limit the size:
+        egui::Vec2::new(1024.0, 2048.0)
+    }
+
+    fn clear_color(&self) -> egui::Rgba {
+        // NOTE: a bright gray makes the shadows of the windows look weird.
+        // We use a bit of transparency so that if the user switches on the
+        // `transparent()` option they get immediate results.
+        egui::Color32::from_rgba_unmultiplied(12, 12, 12, 180).into()
+    }
+
+    fn persist_native_window(&self) -> bool {
+        true
+    }
+
+    fn persist_egui_memory(&self) -> bool {
+        true
     }
 }

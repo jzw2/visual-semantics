@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::parse::parse;
 #[derive(Clone, Debug)]
 struct State(Vec<(String, i32)>);
 
@@ -218,6 +219,14 @@ impl fmt::Display for Stack {
     }
 }
 impl Stack {
+    pub fn create_from_string(s: String) -> Option<Stack> {
+        let pgm = parse(s)?;
+        let s = Stack {
+            stack: vec![Configuration::PgmConf(Box::new(pgm))],
+            rules: vec![],
+        };
+        Some(s)
+    }
     pub fn new() -> Stack {
         // let variables = vec!["x".to_string(), "y".to_string()];
         // let assign_x = Stmt::Assign("x".to_string(), Box::new(AExp::Int(5)));
