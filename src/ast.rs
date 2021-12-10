@@ -625,7 +625,7 @@ vec![
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(box1, box2) => {
+                        AExp::Plus(box1, _box2) => {
                             Configuration::AExpConf(Box::new(AExp::Plus(box1, new_arith)), sigma)
                         }
                         _ => return None,
@@ -644,7 +644,7 @@ vec![
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(box1, box2) => {
+                        AExp::Plus(_box1, box2) => {
                             Configuration::AExpConf(Box::new(AExp::Plus(box2, new_arith)), sigma)
                         }
                         _ => return None,
@@ -677,7 +677,7 @@ vec![
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Divide(box1, box2) => {
+                        AExp::Divide(box1, _box2) => {
                             Configuration::AExpConf(Box::new(AExp::Divide(box1, new_arith)), sigma)
                         }
                         _ => return None,
@@ -693,7 +693,7 @@ vec![
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Divide(box1, box2) => {
+                        AExp::Divide(_box1, box2) => {
                             Configuration::AExpConf(Box::new(AExp::Divide(box2, new_arith)), sigma)
                         }
                         _ => return None,
@@ -726,7 +726,7 @@ vec![
                 };
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::LessThanEq(box1, box2) => {
+                        BExp::LessThanEq(_box1, box2) => {
                             Configuration::BExpConf(Box::new(BExp::LessThanEq(new_arith, box2)), sigma)
                         }
                         _ => return None,
@@ -743,7 +743,7 @@ vec![
                 };
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::LessThanEq(box1, box2) => {
+                        BExp::LessThanEq(box1, _box2) => {
                             Configuration::BExpConf(Box::new(BExp::LessThanEq(box1, new_arith)), sigma)
                         }
                         _ => return None,
@@ -778,7 +778,7 @@ vec![
                 };
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::Negation(box1) => {
+                        BExp::Negation(_box1) => {
                             Configuration::BExpConf(new_bool, sigma)
                         }
                         _ => return None,
@@ -935,7 +935,7 @@ vec![
                 };
                 match bottom {
                     Configuration::StmtConf(s, sigm) => match *s {
-                        Stmt::IfThenElse(b_ptr, s1_ptr, s2_ptr) => 
+                        Stmt::IfThenElse(_b_ptr, s1_ptr, s2_ptr) => 
                             Configuration::StmtConf(
                                 Stmt::IfThenElse(new_bool, s1_ptr, s2_ptr).into(),
                                 sigm,

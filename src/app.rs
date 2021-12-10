@@ -1,6 +1,6 @@
 use crate::ast::Rule;
 use crate::ast::Stack;
-use eframe::egui::color::Color32;
+
 use eframe::{egui, epi};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -318,7 +318,7 @@ impl epi::App for TemplateApp {
             ui.label(format!("{}", stack));
 
 
-            let response = ui.add(egui::TextEdit::multiline(start_program));
+            let _response = ui.add(egui::TextEdit::multiline(start_program));
             // if response.changed() {
             //     if let Some(s) = Stack::create_from_string(start_program.to_string()) {
             //         println!("parsed as {:?}", s);

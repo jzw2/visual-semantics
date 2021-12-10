@@ -1,18 +1,15 @@
 use nom::{
   IResult,
-  bytes::complete::{tag, take_while_m_n},
-  combinator::map_res,
+  bytes::complete::{tag},
   sequence::tuple ,
   sequence::preceded ,
   sequence::terminated ,
    error::ParseError,
-  combinator::value,
   sequence::delimited,
   sequence::separated_pair,
   character::complete::multispace0,
   character::complete::digit1,
   character::complete::alpha1,
-  number::complete::be_i32,
   branch::alt,
   multi::many0,
   multi::separated_list1,
@@ -109,7 +106,7 @@ fn and_extra(input: &str) -> IResult<&str, Vec<BExp>> {
 
 
 fn parse_true(input: &str) -> IResult<&str, BExp> {
-  let (input, b) = delimited(multispace0,
+  let (input, _b) = delimited(multispace0,
       tag("true"),
       multispace0
     )(input)?;
