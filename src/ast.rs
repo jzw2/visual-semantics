@@ -535,15 +535,14 @@ impl Rule {
             },
             // crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
             Rule::RewriteLessThanRight => {
-                // match conf {
-                //     Configuration::BExpConf(x, sigma) =>
-                //     match *x {
-                //         BExp::LessThanEq(a1, a2) => Configuration::AExpConf(a2, sigma),
-                //         _ => return None
-                //     }
-                //     _ => return None
-                // }
-                Configuration::Dummy
+                match conf {
+                    Configuration::BExpConf(x, sigma) =>
+                    match *x {
+                        BExp::LessThanEq(a1, a2) => Configuration::AExpConf(a2, sigma),
+                        _ => return None
+                    }
+                    _ => return None
+                }
             }
             // rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .
             Rule::RewriteLessThan => Configuration::Dummy,
@@ -650,8 +649,8 @@ impl Rule {
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(box1, _box2) => {
-                            Configuration::AExpConf(Box::new(AExp::Plus(box1, new_arith)), sigma)
+                        AExp::Plus(box1, box2) => {
+                            Configuration::AExpConf(Box::new(AExp::Plus(new_arith, box2)), sigma)
                         }
                         _ => return None,
                     },
@@ -667,8 +666,8 @@ impl Rule {
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(_box1, box2) => {
-                            Configuration::AExpConf(Box::new(AExp::Plus(box2, new_arith)), sigma)
+                        AExp::Plus(box1, box2) => {
+                            Configuration::AExpConf(Box::new(AExp::Plus(box1, new_arith)), sigma)
                         }
                         _ => return None,
                     },
