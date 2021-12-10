@@ -208,7 +208,7 @@ fn stmt(input: &str) -> IResult<&str, Stmt> {
 }
 
 fn pgm(input: &str) -> IResult<&str, Pgm> {
-  let (input, (_, vs, s, _)) = tuple((tag("int"), separated_list1(tag(","), var), seq_list, semicolon))(input)?;
+  let (input, (_, vs, _, s)) = tuple((tag("int"), separated_list1(tag(","), var), semicolon, seq_list))(input)?;
   let s = match s {
     Some(s) => s,
     None  => Stmt::StmtBlock(Box::new(Block::EmptyBlock)),
