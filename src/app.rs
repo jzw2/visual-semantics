@@ -19,7 +19,6 @@ pub struct TemplateApp {
     start_program: String,
 }
 
-
 impl Rule {
     fn to_string(&self) -> String {
         println!("{:?}", self);
@@ -317,7 +316,6 @@ impl epi::App for TemplateApp {
             }
             ui.label(format!("{}", stack));
 
-
             let _response = ui.add(egui::TextEdit::multiline(start_program));
             // if response.changed() {
             //     if let Some(s) = Stack::create_from_string(start_program.to_string()) {
@@ -326,13 +324,12 @@ impl epi::App for TemplateApp {
             //     }
             // }
             if ui.button("Use new program").clicked() {
-                 if let Some(s) = Stack::create_from_string(start_program.to_string()) {
-                     println!("parsed as {:?}", s);
-                     *stack = s;
-                 } else {
-
+                if let Some(s) = Stack::create_from_string(start_program.to_string()) {
+                    println!("parsed as {:?}", s);
+                    *stack = s;
+                } else {
                     println!("parse failed");
-                 }
+                }
                 println!("{:?}", stack);
             }
         });

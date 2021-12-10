@@ -252,7 +252,10 @@ impl Stack {
         let add_to_x = AExp::Plus(Box::new(evaluate_x.clone()), Box::new(AExp::Int(1)));
         let add_to_x2 = Stmt::Assign("x".to_string(), Box::new(add_to_x));
         let less_xy = BExp::LessThanEq(Box::new(evaluate_x), Box::new(evaluate_y));
-        let while_xy = Stmt::While(Box::new(less_xy), Box::new(Block::BlockStmt(Box::new(add_to_x2))));
+        let while_xy = Stmt::While(
+            Box::new(less_xy),
+            Box::new(Block::BlockStmt(Box::new(add_to_x2))),
+        );
 
         let program = Stmt::Sequence(
             assign_x.into(),
@@ -373,36 +376,35 @@ pub enum Rule {
     NoOp,
 }
 
-
 impl Rule {
     fn list_of_rules() -> Vec<Rule> {
-vec![
-             Rule::RewriteVariableLookup ,
-             Rule::RewritePlusLeft ,
-             Rule::RewritePlusRight ,
-             Rule::RewritePlus ,
-             Rule::RewriteDivideLeft ,
-             Rule::RewriteDivideRight ,
-             Rule::RewriteDivide ,
-             Rule::RewriteLessThanLeft ,
-             Rule::RewriteLessThanRight ,
-             Rule::RewriteLessThan ,
-             Rule::RewriteNegate ,
-             Rule::RewriteNegateTrue ,
-             Rule::RewriteNegateFalse ,
-             Rule::RewriteBlockStatement ,
-             Rule::RewriteAssignmentArith ,
-             Rule::RewriteAssignmentInt ,
-             Rule::RewriteSequence ,
-             Rule::RewriteEmptyBlock ,
-             Rule::RewriteConditional ,
-             Rule::RewriteConditionalTrue ,
-             Rule::RewriteConditionalFalse ,
-
-             Rule::RewriteLoop ,
-             Rule::RewriteTop  ,
-             Rule::NoOp  ,
-]    }
+        vec![
+            Rule::RewriteVariableLookup,
+            Rule::RewritePlusLeft,
+            Rule::RewritePlusRight,
+            Rule::RewritePlus,
+            Rule::RewriteDivideLeft,
+            Rule::RewriteDivideRight,
+            Rule::RewriteDivide,
+            Rule::RewriteLessThanLeft,
+            Rule::RewriteLessThanRight,
+            Rule::RewriteLessThan,
+            Rule::RewriteNegate,
+            Rule::RewriteNegateTrue,
+            Rule::RewriteNegateFalse,
+            Rule::RewriteBlockStatement,
+            Rule::RewriteAssignmentArith,
+            Rule::RewriteAssignmentInt,
+            Rule::RewriteSequence,
+            Rule::RewriteEmptyBlock,
+            Rule::RewriteConditional,
+            Rule::RewriteConditionalTrue,
+            Rule::RewriteConditionalFalse,
+            Rule::RewriteLoop,
+            Rule::RewriteTop,
+            Rule::NoOp,
+        ]
+    }
     fn get_description(&self) -> String {
         match self {
              Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
@@ -593,7 +595,7 @@ vec![
         Some(ret)
     }
 
-    // bottom is the configuration below the line, 
+    // bottom is the configuration below the line,
     // top is the configuration above the line, and we want to return the new top
     fn reduce_down(&self, bottom: Configuration, top: Configuration) -> Option<Configuration> {
         let x = match self {
@@ -618,7 +620,6 @@ vec![
             }
 
             Rule::RewritePlusLeft => {
-
                 let new_arith = match top {
                     Configuration::AExpConf(b, _sigma) => b,
                     _ => return None,
@@ -632,11 +633,9 @@ vec![
                     },
                     _ => return None,
                 }
-
-             }                   
+            }
             Rule::RewritePlusRight => {
-// crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
-
+                // crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
 
                 let new_arith = match top {
                     Configuration::AExpConf(b, _sigma) => b,
@@ -651,7 +650,6 @@ vec![
                     },
                     _ => return None,
                 }
-
             }
 
             Rule::RewritePlus => match bottom {
@@ -713,22 +711,23 @@ vec![
                         },
                         _ => return None,
                     },
+                    _ => return None,
+                },
                 _ => return None,
-                }
-                _ => return None,
-            }
+            },
 
             Rule::RewriteLessThanLeft => {
-            // crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .
+                // crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .
                 let new_arith = match top {
                     Configuration::AExpConf(b, _sigma) => b,
                     _ => return None,
                 };
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::LessThanEq(_box1, box2) => {
-                            Configuration::BExpConf(Box::new(BExp::LessThanEq(new_arith, box2)), sigma)
-                        }
+                        BExp::LessThanEq(_box1, box2) => Configuration::BExpConf(
+                            Box::new(BExp::LessThanEq(new_arith, box2)),
+                            sigma,
+                        ),
                         _ => return None,
                     },
                     _ => return None,
@@ -736,16 +735,16 @@ vec![
             }
 
             Rule::RewriteLessThanRight => {
-
                 let new_arith = match top {
                     Configuration::AExpConf(b, _sigma) => b,
                     _ => return None,
                 };
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::LessThanEq(box1, _box2) => {
-                            Configuration::BExpConf(Box::new(BExp::LessThanEq(box1, new_arith)), sigma)
-                        }
+                        BExp::LessThanEq(box1, _box2) => Configuration::BExpConf(
+                            Box::new(BExp::LessThanEq(box1, new_arith)),
+                            sigma,
+                        ),
                         _ => return None,
                     },
                     _ => return None,
@@ -754,33 +753,33 @@ vec![
 
             Rule::RewriteLessThan => match bottom {
                 Configuration::BExpConf(_x, _sigma) => match *_x {
-                    BExp::LessThanEq(box1, box2) => {
-                      match *box1 {
-                          AExp::Int(i1) => match *box2 {
-                              AExp::Int(i2) => if i2 > i1 {Configuration::BExpConf(Box::new(BExp::Bool(true)), _sigma)} 
-                              else {Configuration::BExpConf(Box::new(BExp::Bool(false)), _sigma) }
-                              _ => return None 
+                    BExp::LessThanEq(box1, box2) => match *box1 {
+                        AExp::Int(i1) => match *box2 {
+                            AExp::Int(i2) => {
+                                if i2 > i1 {
+                                    Configuration::BExpConf(Box::new(BExp::Bool(true)), _sigma)
+                                } else {
+                                    Configuration::BExpConf(Box::new(BExp::Bool(false)), _sigma)
+                                }
                             }
-                          _ => return None
-                      }  
+                            _ => return None,
+                        },
+                        _ => return None,
                     },
-                    _ => return None
-                }
+                    _ => return None,
+                },
                 _ => return None,
             },
 
             // crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .
             Rule::RewriteNegate => {
-
                 let new_bool = match top {
                     Configuration::BExpConf(b, _sigma) => b,
                     _ => return None,
                 };
                 match bottom {
                     Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::Negation(_box1) => {
-                            Configuration::BExpConf(new_bool, sigma)
-                        }
+                        BExp::Negation(_box1) => Configuration::BExpConf(new_bool, sigma),
                         _ => return None,
                     },
                     _ => return None,
@@ -788,49 +787,39 @@ vec![
             }
 
             // rl o < ! true,Sigma > => < false,Sigma > .
-            Rule::RewriteNegateTrue => {
-
-                match bottom {
-                    Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::Negation(box1) => match *box1 {
-                            BExp::Bool(true) => {
-
-                                Configuration::BExpConf(Box::new(BExp::Bool(false)), sigma)
-                            }
-                            _ => return None,
+            Rule::RewriteNegateTrue => match bottom {
+                Configuration::BExpConf(x, sigma) => match *x {
+                    BExp::Negation(box1) => match *box1 {
+                        BExp::Bool(true) => {
+                            Configuration::BExpConf(Box::new(BExp::Bool(false)), sigma)
                         }
                         _ => return None,
                     },
                     _ => return None,
-                }
-            }
+                },
+                _ => return None,
+            },
 
             // rl o < ! false,Sigma > => < true,Sigma > .
-            Rule::RewriteNegateFalse => {
-
-                match bottom {
-                    Configuration::BExpConf(x, sigma) => match *x {
-                        BExp::Negation(box1) => match *box1 {
-                            BExp::Bool(false) => {
-
-                                Configuration::BExpConf(Box::new(BExp::Bool(true)), sigma)
-                            }
-                            _ => return None,
+            Rule::RewriteNegateFalse => match bottom {
+                Configuration::BExpConf(x, sigma) => match *x {
+                    BExp::Negation(box1) => match *box1 {
+                        BExp::Bool(false) => {
+                            Configuration::BExpConf(Box::new(BExp::Bool(true)), sigma)
                         }
                         _ => return None,
                     },
                     _ => return None,
-                }
-            }
+                },
+                _ => return None,
+            },
 
             Rule::RewriteBlockStatement => {
                 // rl o < {S},Sigma > => < S,Sigma > .
                 match bottom {
                     Configuration::StmtConf(x, sigma) => match *x {
                         Stmt::StmtBlock(s) => match *s {
-                            Block::BlockStmt(s) => {
-                                Configuration::StmtConf(s, sigma)
-                            }
+                            Block::BlockStmt(s) => Configuration::StmtConf(s, sigma),
                             _ => return None,
                         },
 
@@ -935,11 +924,10 @@ vec![
                 };
                 match bottom {
                     Configuration::StmtConf(s, sigm) => match *s {
-                        Stmt::IfThenElse(_b_ptr, s1_ptr, s2_ptr) => 
-                            Configuration::StmtConf(
-                                Stmt::IfThenElse(new_bool, s1_ptr, s2_ptr).into(),
-                                sigm,
-                            ),
+                        Stmt::IfThenElse(_b_ptr, s1_ptr, s2_ptr) => Configuration::StmtConf(
+                            Stmt::IfThenElse(new_bool, s1_ptr, s2_ptr).into(),
+                            sigm,
+                        ),
                         _ => return None,
                     },
                     _ => return None,
