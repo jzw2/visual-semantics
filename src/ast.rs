@@ -278,17 +278,17 @@ impl Stack {
         println!("{:?}", next_configuration);
         match next_configuration {
             Some(Configuration::Dummy) => {
-                let mut top_conf = Configuration::Dummy;
+                let top_conf = Configuration::Dummy;
                     let bottom_conf = last;
                     println!("{:?}", self);
                     match rule.reduce_down(bottom_conf.clone(), top_conf) {
                         None => {
                             false
                         }
-                        Some(x) => true
+                        Some(_x) => true
                     }
             }
-            Some(conf) => {
+            Some(_conf) => {
                 true
             }
             None => {
@@ -297,7 +297,7 @@ impl Stack {
         }
     }
     // true means a sucess apply, false failed to apply rule
-    pub fn applyRule(&mut self, rule: Rule) -> bool {
+    pub fn apply_rule(&mut self, rule: Rule) -> bool {
         println!("{:?}", self);
         self.rules.push(rule.clone());
         println!("{:?}", self);
@@ -570,7 +570,7 @@ impl Rule {
                 match conf {
                     Configuration::BExpConf(x, sigma) =>
                     match *x {
-                        BExp::LessThanEq(a1, a2) => Configuration::AExpConf(a2, sigma),
+                        BExp::LessThanEq(_a1, a2) => Configuration::AExpConf(a2, sigma),
                         _ => return None
                     }
                     _ => return None
@@ -680,7 +680,7 @@ impl Rule {
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(box1, box2) => {
+                        AExp::Plus(_box1, box2) => {
                             Configuration::AExpConf(Box::new(AExp::Plus(new_arith, box2)), sigma)
                         }
                         _ => return None,
@@ -697,7 +697,7 @@ impl Rule {
                 };
                 match bottom {
                     Configuration::AExpConf(x, sigma) => match *x {
-                        AExp::Plus(box1, box2) => {
+                        AExp::Plus(box1, _box2) => {
                             Configuration::AExpConf(Box::new(AExp::Plus(box1, new_arith)), sigma)
                         }
                         _ => return None,
@@ -948,7 +948,6 @@ impl Rule {
                         Pgm::Program(xl, s) => {
                             Configuration::StmtConf(s.into(), State::create_state(xl))
                         }
-                        _ => return None,
                     },
                     _ => return None,
                 }
@@ -1044,10 +1043,6 @@ impl Rule {
     }
 }
 
-impl Configuration {
-    fn rewrite_top() {}
-    fn rewrite_conditional() {}
-}
 
 /*
 

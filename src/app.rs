@@ -105,7 +105,7 @@ impl epi::App for TemplateApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
+    fn update(&mut self, ctx: &egui::CtxRef, _frame: &mut epi::Frame<'_>) {
         let Self {
             label: _,
             value: _,
@@ -300,11 +300,11 @@ impl epi::App for TemplateApp {
             // ui.label("rl o < int Xl ; S > => < S,(Xl |-> 0) > .");
 
             // let button = egui::Button::new("Apply").text_color(Color32::BLUE).fill(Color32::WHITE);
-            // if ui.add_sized([80.0, 20.0], button).clicked() {
+            // if ui.add_sized([80.0, 20.0], butston).clicked() {
             //     stack.applyRule(my_enum.clone());
             // }
             if ui.button("Apply").clicked() {
-                stack.applyRule(my_enum.clone());
+                stack.apply_rule(my_enum.clone());
             }
         });
 

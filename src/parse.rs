@@ -1,6 +1,6 @@
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alpha1, character::complete::digit1,
-    character::complete::multispace0, error::ParseError, multi::many0, multi::separated_list1,
+    character::complete::multispace0, multi::many0, multi::separated_list1,
     sequence::delimited, sequence::preceded, sequence::separated_pair, sequence::terminated,
     sequence::tuple, IResult,
 };
