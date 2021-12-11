@@ -2,13 +2,11 @@
 
 # TODO
 
-- Write another test program
-
 - implement clear button
 
 - implement an undo button
 
-- implement user inputs program instead of hard coding initial program
+- implement history
 
 - make it look nicer aesthetically
 

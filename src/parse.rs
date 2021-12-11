@@ -11,14 +11,6 @@ use crate::ast::Block;
 use crate::ast::Pgm;
 use crate::ast::Stmt;
 
-fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
-    inner: F,
-) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
-where
-    F: Fn(&'a str) -> IResult<&'a str, O, E>,
-{
-    delimited(multispace0, inner, multispace0)
-}
 
 fn parenth(input: &str) -> IResult<&str, AExp> {
     delimited(

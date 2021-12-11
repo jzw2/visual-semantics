@@ -17,48 +17,49 @@ pub struct TemplateApp {
     current_display_text: String,
     stack: Stack,
     start_program: String,
+    error_message: String,
 }
 
-impl Rule {
-    fn to_string(&self) -> String {
-        println!("{:?}", self);
-        let x = match self {
+// impl Rule {
+//     fn to_string(&self) -> String {
+//         println!("{:?}", self);
+//         let x = match self {
 
-            Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
-            Rule::RewritePlusLeft => "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
-            Rule::RewritePlusRight => "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
-            Rule::RewritePlus => " rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .".to_string(),
+//             Rule::RewriteVariableLookup => "crl o < X,Sigma > => < Sigma(X),Sigma > if Sigma(X) =/=Bool undefined .".to_string(),
+//             Rule::RewritePlusLeft => "crl o < A1 + A2,Sigma > => < A1' + A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
+//             Rule::RewritePlusRight => "crl o < A1 + A2,Sigma > => < A1 + A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
+//             Rule::RewritePlus => " rl o < I1 + I2,Sigma > => < I1 +Int I2,Sigma > .".to_string(),
 
-            Rule::RewriteDivideLeft => "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
-            Rule::RewriteDivideRight => "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
-            Rule::RewriteDivide => "crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .".to_string(),
+//             Rule::RewriteDivideLeft => "crl o < A1 / A2,Sigma > => < A1' / A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
+//             Rule::RewriteDivideRight => "crl o < A1 / A2,Sigma > => < A1 / A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
+//             Rule::RewriteDivide => "crl o < I1 / I2,Sigma > => < I1 /Int I2,Sigma > if I2 =/=Bool 0 .".to_string(),
         
-            Rule::RewriteLessThanLeft => "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
-            Rule::RewriteLessThanRight => "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
-            Rule::RewriteLessThan => "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .".to_string(),
-            Rule::RewriteNegate => "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .".to_string(),
-            Rule::RewriteNegateTrue => "rl o < ! true,Sigma > => < false,Sigma > .".to_string(),
-            Rule::RewriteNegateFalse => "rl o < ! false,Sigma > => < true,Sigma > .".to_string(),
+//             Rule::RewriteLessThanLeft => "crl o < A1 <= A2,Sigma > => < A1' <= A2,Sigma > if o < A1,Sigma > => < A1',Sigma > .".to_string(),
+//             Rule::RewriteLessThanRight => "crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .".to_string(),
+//             Rule::RewriteLessThan => "rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .".to_string(),
+//             Rule::RewriteNegate => "crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .".to_string(),
+//             Rule::RewriteNegateTrue => "rl o < ! true,Sigma > => < false,Sigma > .".to_string(),
+//             Rule::RewriteNegateFalse => "rl o < ! false,Sigma > => < true,Sigma > .".to_string(),
             
-            Rule::RewriteBlockStatement => "rl o < {S},Sigma > => < S,Sigma > .".to_string(),
-            Rule::RewriteAssignmentArith => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
-            Rule::RewriteAssignmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
+//             Rule::RewriteBlockStatement => "rl o < {S},Sigma > => < S,Sigma > .".to_string(),
+//             Rule::RewriteAssignmentArith => "crl o < X = A ;,Sigma > => < X = A' ;,Sigma > if o < A,Sigma > => < A',Sigma > .".to_string(),
+//             Rule::RewriteAssignmentInt => "crl o < X = I ;,Sigma > => < {},Sigma[I / X] > if Sigma(X) =/=Bool undefined .".to_string(),
 
-            Rule::RewriteSequence => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
-            Rule::RewriteEmptyBlock => "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
+//             Rule::RewriteSequence => "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > .".to_string(),
+//             Rule::RewriteEmptyBlock => "rl o < {} S2,Sigma > => < S2,Sigma > .".to_string(),
             
-            Rule::RewriteConditional => "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .".to_string(),
-            Rule::RewriteConditionalTrue => "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .".to_string(),
-            Rule::RewriteConditionalFalse => "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .".to_string(),
+//             Rule::RewriteConditional => "crl o < if (B) S1 else S2,Sigma > => < if (B') S1 else S2,Sigma > if o < B,Sigma > => < B',Sigma  > .".to_string(),
+//             Rule::RewriteConditionalTrue => "rl o < if (true) S1 else S2,Sigma > => < S1,Sigma > .".to_string(),
+//             Rule::RewriteConditionalFalse => "rl o < if (false) S1 else S2,Sigma > => < S2,Sigma > .".to_string(),
 
-            Rule::RewriteLoop => "rl o < while (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .".to_string(),
-            Rule::NoOp => "None selected".to_string(),
-            _ => "".to_string(),
-        };
-        println!("x is {:?}", x);
-        x
-    }
-}
+//             Rule::RewriteLoop => "rl o < whileInt(1), Int(1)Int(1), Int(1) (B) S,Sigma > => < if (B) {S while (B) S} else {},Sigma > .".to_string(),
+//             Rule::NoOp => "None selected".to_string(),
+//             _ => "".to_string(),
+//         };
+//         println!("x is {:?}", x);
+//         x
+//     }
+// }
 
 impl Default for TemplateApp {
     fn default() -> Self {
@@ -70,6 +71,7 @@ impl Default for TemplateApp {
             current_display_text: "".to_string(),
             stack: Stack::new(),
             start_program: "int x, y;\n  x = x + 1;".to_string(),
+            error_message: "".to_string(),
         }
     }
 }
@@ -111,6 +113,7 @@ impl epi::App for TemplateApp {
             current_display_text: _,
             stack,
             start_program,
+            error_message,
         } = self;
 
         // Examples of how to create different panels and windows.
@@ -118,16 +121,16 @@ impl epi::App for TemplateApp {
         // Tip: a good default choice is to just keep the `CentralPanel`.
         // For inspiration and more examples, go to https://emilk.github.io/egui
 
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-            egui::menu::bar(ui, |ui| {
-                egui::menu::menu(ui, "File", |ui| {
-                    if ui.button("Quit").clicked() {
-                        frame.quit();
-                    }
-                });
-            });
-        });
+        // egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+        //     // The top panel is often a good place for a menu bar:
+        //     egui::menu::bar(ui, |ui| {
+        //         egui::menu::menu(ui, "File", |ui| {
+        //             if ui.button("Quit").clicked() {
+        //                 frame.quit();
+        //             }
+        //         });
+        //     });
+        // });
 
         egui::SidePanel::left("side_panel").min_width(500.0).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui|{
@@ -135,12 +138,12 @@ impl epi::App for TemplateApp {
             });
 
             egui::Grid::new("some_unique_id").show(ui, |ui| {
-
                 let applicable_rules = Rule::list_of_rules().into_iter().filter(|rule| {
                     stack.can_apply_rule(rule.clone())
                 });
                 for rule in applicable_rules {
-                    ui.label("Fix me later");
+                    let label = rule.get_label();
+                    ui.label(label);
                     let description = rule.get_description();
                     ui.radio_value(my_enum, rule, description);
                     ui.end_row();
@@ -322,9 +325,15 @@ impl epi::App for TemplateApp {
             //     ui.style_mut().wrap = Some(false);
 
             // });
-            if ui.button("Undo").clicked() {
-                stack.pop();
-            }
+
+            ui.horizontal_wrapped(|ui|{
+                if ui.button("Pop Top").clicked() {
+                    stack.pop();
+                }
+                if ui.button("Clear stack").clicked() {
+                    stack.clear();
+                }
+            });
             ui.label(format!("{}", stack));
 
             let _response = ui.add(egui::TextEdit::multiline(start_program));
@@ -338,11 +347,14 @@ impl epi::App for TemplateApp {
                 if let Some(s) = Stack::create_from_string(start_program.to_string()) {
                     println!("parsed as {:?}", s);
                     *stack = s;
+                    *error_message = "".to_string();
                 } else {
                     println!("parse failed");
+                    *error_message = "Unable to parse".to_string();
                 }
                 println!("{:?}", stack);
             }
+            ui.label(error_message);
         });
     }
 
