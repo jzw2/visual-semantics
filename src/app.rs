@@ -1,7 +1,11 @@
 use crate::ast::Rule;
 use crate::ast::Stack;
 
-use eframe::{egui, epi};
+use eframe::{egui, epi, };
+use egui::TextStyle;
+use egui::FontDefinitions;
+use egui::FontFamily;
+use egui::CollapsingHeader;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
@@ -76,6 +80,8 @@ impl epi::App for TemplateApp {
                 ui.spacing_mut().item_spacing.x = 50.0;
             });
 
+            ui.label("Applicable Rules:");
+
             egui::Grid::new("some_unique_id").show(ui, |ui| {
                 let applicable_rules = Rule::list_of_rules().into_iter().filter(|rule| {
                     stack.can_apply_rule(rule.clone())
@@ -91,8 +97,31 @@ impl epi::App for TemplateApp {
             if ui.button("Apply").clicked() {
                 stack.apply_rule(my_enum.clone());
             }
-        });
+            
+        //     let mut fonts = FontDefinitions::default();
 
+        // // Large button text:
+        //     fonts.family_and_size.insert(
+        //         TextStyle::Body,
+        //         (FontFamily::Proportional, 60.0)
+        //     );
+
+        //     ctx.set_fonts(fonts);
+
+            for rule in Rule::list_of_rules() {
+                let label = rule.get_label();
+        CollapsingHeader::new(label)
+                    .default_open(false)
+                    .show(ui, |ui| {
+                    ui.label(rule.get_description());
+                        
+                    });
+                    }
+            ctx.set_fonts(FontDefinitions::default());
+        });
+        // egui::TopBottomPanel::bottom("hi").show(ctx, |ui| {
+
+        // });
         egui::CentralPanel::default().show(ctx, |ui| {
 
             ui.horizontal_wrapped(|ui|{
