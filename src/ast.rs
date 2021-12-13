@@ -202,6 +202,8 @@ impl fmt::Display for Block {
 pub struct Stack {
     stack: Vec<Configuration>,
     rules: Vec<Rule>,
+    prev: Option<Box<Stack>>,
+    next: Option<Box<Stack>>,
 }
 
 impl fmt::Display for Stack {
@@ -224,6 +226,8 @@ impl Stack {
         let s = Stack {
             stack: vec![Configuration::PgmConf(Box::new(pgm))],
             rules: vec![],
+            prev: None,
+            next: None,
         };
         Some(s)
     }
@@ -270,6 +274,8 @@ impl Stack {
                 variables, program,
             )))],
             rules: vec![],
+            prev: None,
+            next: None,
         }
     }
     pub fn can_apply_rule(&self, rule: Rule) -> bool {
@@ -298,6 +304,8 @@ impl Stack {
     }
     // true means a sucess apply, false failed to apply rule
     pub fn apply_rule(&mut self, rule: Rule) -> bool {
+        let old_rules = self.rules.clone();
+        let old_stack = self.stack.clone();
         println!("{:?}", self);
         self.rules.push(rule.clone());
         println!("{:?}", self);
@@ -324,9 +332,24 @@ impl Stack {
                 }
                 self.stack.push(top_conf);
                 println!("{:?}", self);
+
+                self.prev = Some(Box::new(Stack {
+                    stack: old_stack,
+                    rules: old_rules,
+                    prev: self.prev.clone(),
+                    next: None,
+                }))
             }
             Some(conf) => {
                 self.stack.push(conf);
+
+                self.prev = Some(Box::new(Stack {
+                    stack: old_stack,
+                    rules: old_rules,
+                    prev: self.prev.clone(),
+                    next: None,
+                }))
+
             }
             None => {
                 self.rules.pop();
@@ -339,6 +362,54 @@ impl Stack {
         if self.stack.len() > 1 {
             self.stack.pop();
             self.rules.pop();
+        }
+    }
+    pub fn create_from_prev(stack: &mut Stack, prev_stack: Stack) -> Stack {
+        Stack {
+            stack: prev_stack.stack.clone(),
+            rules: prev_stack.rules.clone(),
+            prev: prev_stack.prev.clone(),
+            next: Some(Box::new(stack.clone())),
+        }
+    }
+    pub fn create_from_next(stack: &mut Stack, next_stack: Stack) -> Stack {
+        Stack {
+            stack: next_stack.stack.clone(),
+            rules: next_stack.rules.clone(),
+            prev: Some(Box::new(stack.clone())),
+            next: next_stack.next.clone(),
+        }
+    }
+    pub fn undo(&mut self) {
+        let prev = self.clone();
+        match prev.prev {
+            None => (),
+            Some(b) => match *b{
+                pstack => {
+                    let ns = Stack::create_from_prev(self, pstack);
+                    self.stack = ns.stack.clone();
+                    self.rules = ns.rules.clone();
+                    self.prev = ns.prev.clone();
+                    self.next = ns.next.clone();
+                }
+            }
+        }
+    }
+    pub fn redo(&mut self) {
+        let next = self.clone();
+        match next.next {
+            None => (),
+            Some(box1) => {
+                match *box1 {
+                    nstack => {
+                        let ns = Stack::create_from_next(self, nstack);
+                        self.stack = ns.stack.clone();
+                        self.rules = ns.rules.clone();
+                        self.prev = ns.prev.clone();
+                        self.next = ns.next.clone();
+                    }
+                }
+            }
         }
     }
 }

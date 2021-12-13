@@ -125,6 +125,15 @@ impl epi::App for TemplateApp {
         egui::CentralPanel::default().show(ctx, |ui| {
 
             ui.horizontal_wrapped(|ui|{
+                if ui.button("Undo").clicked() {
+                    stack.undo();
+                }
+                if ui.button("Redo").clicked() {
+                    stack.redo();
+                }
+            });
+
+            ui.horizontal_wrapped(|ui|{
                 if ui.button("Pop Top").clicked() {
                     stack.pop();
                 }
