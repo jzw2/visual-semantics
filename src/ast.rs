@@ -368,7 +368,7 @@ impl Stack {
         Stack {
             stack: prev_stack.stack.clone(),
             rules: prev_stack.rules.clone(),
-            prev: prev_stack.prev.clone(),
+            prev: prev_stack.prev,
             next: Some(Box::new(stack.clone())),
         }
     }
@@ -377,7 +377,7 @@ impl Stack {
             stack: next_stack.stack.clone(),
             rules: next_stack.rules.clone(),
             prev: Some(Box::new(stack.clone())),
-            next: next_stack.next.clone(),
+            next: next_stack.next,
         }
     }
     pub fn undo(&mut self) {
@@ -390,7 +390,7 @@ impl Stack {
                     self.stack = ns.stack.clone();
                     self.rules = ns.rules.clone();
                     self.prev = ns.prev.clone();
-                    self.next = ns.next.clone();
+                    self.next = ns.next;
                 }
             }
         }
@@ -406,7 +406,7 @@ impl Stack {
                         self.stack = ns.stack.clone();
                         self.rules = ns.rules.clone();
                         self.prev = ns.prev.clone();
-                        self.next = ns.next.clone();
+                        self.next = ns.next;
                     }
                 }
             }

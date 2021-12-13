@@ -2,9 +2,9 @@ use crate::ast::Rule;
 use crate::ast::Stack;
 
 use eframe::{egui, epi, };
-use egui::TextStyle;
+
 use egui::FontDefinitions;
-use egui::FontFamily;
+
 use egui::CollapsingHeader;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
