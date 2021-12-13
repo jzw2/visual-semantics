@@ -285,21 +285,15 @@ impl Stack {
         match next_configuration {
             Some(Configuration::Dummy) => {
                 let top_conf = Configuration::Dummy;
-                    let bottom_conf = last;
-                    println!("{:?}", self);
-                    match rule.reduce_down(bottom_conf.clone(), top_conf) {
-                        None => {
-                            false
-                        }
-                        Some(_x) => true
-                    }
+                let bottom_conf = last;
+                println!("{:?}", self);
+                match rule.reduce_down(bottom_conf.clone(), top_conf) {
+                    None => false,
+                    Some(_x) => true,
+                }
             }
-            Some(_conf) => {
-                true
-            }
-            None => {
-                false
-            }
+            Some(_conf) => true,
+            None => false,
         }
     }
     // true means a sucess apply, false failed to apply rule
@@ -349,7 +343,6 @@ impl Stack {
                     prev: self.prev.clone(),
                     next: None,
                 }))
-
             }
             None => {
                 self.rules.pop();
@@ -384,7 +377,7 @@ impl Stack {
         let prev = self.clone();
         match prev.prev {
             None => (),
-            Some(b) => match *b{
+            Some(b) => match *b {
                 pstack => {
                     let ns = Stack::create_from_prev(self, pstack);
                     self.stack = ns.stack.clone();
@@ -392,24 +385,22 @@ impl Stack {
                     self.prev = ns.prev.clone();
                     self.next = ns.next;
                 }
-            }
+            },
         }
     }
     pub fn redo(&mut self) {
         let next = self.clone();
         match next.next {
             None => (),
-            Some(box1) => {
-                match *box1 {
-                    nstack => {
-                        let ns = Stack::create_from_next(self, nstack);
-                        self.stack = ns.stack.clone();
-                        self.rules = ns.rules.clone();
-                        self.prev = ns.prev.clone();
-                        self.next = ns.next;
-                    }
+            Some(box1) => match *box1 {
+                nstack => {
+                    let ns = Stack::create_from_next(self, nstack);
+                    self.stack = ns.stack.clone();
+                    self.rules = ns.rules.clone();
+                    self.prev = ns.prev.clone();
+                    self.next = ns.next;
                 }
-            }
+            },
         }
     }
 }
@@ -533,31 +524,31 @@ impl Rule {
 
     pub fn get_label(&self) -> String {
         match self {
-             Rule::RewriteVariableLookup => "Variable Lookup".to_string(),
-             Rule::RewritePlusLeft => "Plus Left".to_string(),
-             Rule::RewritePlusRight => "Plus Right".to_string(),
-             Rule::RewritePlus => "Rewrite Plus".to_string(),
-             Rule::RewriteDivideLeft => "Divide Left".to_string(),
-             Rule::RewriteDivideRight => "Divide Right".to_string(),
-             Rule::RewriteDivide => "Divide".to_string(),
-             Rule::RewriteLessThanLeft => "Less Than Left".to_string(),
-             Rule::RewriteLessThanRight => "Less than Right".to_string(),
-             Rule::RewriteLessThan => "Less Than".to_string(),
-             Rule::RewriteNegate => "Negate".to_string(),
-             Rule::RewriteNegateTrue => "Negate True".to_string(),
-             Rule::RewriteNegateFalse => "Negate False".to_string(),
-             Rule::RewriteBlockStatement => "Block Statement".to_string(),
-             Rule::RewriteAssignmentArith => "Assignment Arithmetic".to_string(),
-             Rule::RewriteAssignmentInt => "Assignment Integer".to_string(),
-             Rule::RewriteSequence => "Sequence".to_string(),
-             Rule::RewriteEmptyBlock => "Empty Block".to_string(),
-             Rule::RewriteConditional => "Conditional".to_string(),
-             Rule::RewriteConditionalTrue => "Conditional True".to_string(),
-             Rule::RewriteConditionalFalse => "Conditional False".to_string(),
+            Rule::RewriteVariableLookup => "Variable Lookup".to_string(),
+            Rule::RewritePlusLeft => "Plus Left".to_string(),
+            Rule::RewritePlusRight => "Plus Right".to_string(),
+            Rule::RewritePlus => "Rewrite Plus".to_string(),
+            Rule::RewriteDivideLeft => "Divide Left".to_string(),
+            Rule::RewriteDivideRight => "Divide Right".to_string(),
+            Rule::RewriteDivide => "Divide".to_string(),
+            Rule::RewriteLessThanLeft => "Less Than Left".to_string(),
+            Rule::RewriteLessThanRight => "Less than Right".to_string(),
+            Rule::RewriteLessThan => "Less Than".to_string(),
+            Rule::RewriteNegate => "Negate".to_string(),
+            Rule::RewriteNegateTrue => "Negate True".to_string(),
+            Rule::RewriteNegateFalse => "Negate False".to_string(),
+            Rule::RewriteBlockStatement => "Block Statement".to_string(),
+            Rule::RewriteAssignmentArith => "Assignment Arithmetic".to_string(),
+            Rule::RewriteAssignmentInt => "Assignment Integer".to_string(),
+            Rule::RewriteSequence => "Sequence".to_string(),
+            Rule::RewriteEmptyBlock => "Empty Block".to_string(),
+            Rule::RewriteConditional => "Conditional".to_string(),
+            Rule::RewriteConditionalTrue => "Conditional True".to_string(),
+            Rule::RewriteConditionalFalse => "Conditional False".to_string(),
 
-             Rule::RewriteLoop => "Loop".to_string(),
-             Rule::RewriteTop  => "Top".to_string(),
-             Rule::NoOp  => "This was not supposed to be available!!!".to_string(),
+            Rule::RewriteLoop => "Loop".to_string(),
+            Rule::RewriteTop => "Top".to_string(),
+            Rule::NoOp => "This was not supposed to be available!!!".to_string(),
         }
     }
 
@@ -637,16 +628,13 @@ impl Rule {
                 _ => return None,
             },
             // crl o < I1 <= A2,Sigma > => < I1 <= A2',Sigma > if o < A2,Sigma > => < A2',Sigma > .
-            Rule::RewriteLessThanRight => {
-                match conf {
-                    Configuration::BExpConf(x, sigma) =>
-                    match *x {
-                        BExp::LessThanEq(_a1, a2) => Configuration::AExpConf(a2, sigma),
-                        _ => return None
-                    }
-                    _ => return None
-                }
-            }
+            Rule::RewriteLessThanRight => match conf {
+                Configuration::BExpConf(x, sigma) => match *x {
+                    BExp::LessThanEq(_a1, a2) => Configuration::AExpConf(a2, sigma),
+                    _ => return None,
+                },
+                _ => return None,
+            },
             // rl o < I1 <= I2,Sigma > => < I1 <=Int I2,Sigma > .
             Rule::RewriteLessThan => Configuration::Dummy,
             // crl o < ! B,Sigma > => < ! B',Sigma > if o < B,Sigma > => < B',Sigma > .
@@ -663,9 +651,7 @@ impl Rule {
             Rule::RewriteNegateFalse => Configuration::Dummy,
             //   rl o < {S},Sigma > => < S,Sigma > .
             Rule::RewriteBlockStatement => Configuration::Dummy,
-            Rule::RewriteEmptyBlock => {
-                Configuration::Dummy
-            }
+            Rule::RewriteEmptyBlock => Configuration::Dummy,
             Rule::RewriteSequence => {
                 // "crl o < S1 S2,Sigma > => < S1' S2,Sigma' > if o < S1,Sigma > => < S1',Sigma' > ."
                 match conf {
@@ -1113,7 +1099,6 @@ impl Rule {
         Some(x)
     }
 }
-
 
 /*
 

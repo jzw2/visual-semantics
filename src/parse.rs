@@ -1,8 +1,7 @@
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alpha1, character::complete::digit1,
-    character::complete::multispace0, multi::many0, multi::separated_list1,
-    sequence::delimited, sequence::preceded, sequence::separated_pair, sequence::terminated,
-    sequence::tuple, IResult,
+    character::complete::multispace0, multi::many0, multi::separated_list1, sequence::delimited,
+    sequence::preceded, sequence::separated_pair, sequence::terminated, sequence::tuple, IResult,
 };
 
 use crate::ast::AExp;
@@ -10,7 +9,6 @@ use crate::ast::BExp;
 use crate::ast::Block;
 use crate::ast::Pgm;
 use crate::ast::Stmt;
-
 
 fn parenth(input: &str) -> IResult<&str, AExp> {
     delimited(
